@@ -14,7 +14,7 @@ const auth = (request: Request, response: Response, next: NextFunction): void =>
                 if (err) {
                     response.status(403).json({ reason: 'Wrong/expired credentials' }).end();
                 } else {
-                    request.body.community_member = decoded;
+                    request.body.user = decoded;
                     next();
                 }
             });
@@ -24,6 +24,6 @@ const auth = (request: Request, response: Response, next: NextFunction): void =>
     }
 };
 
-const clients = { auth };
+const users = { auth };
 
-export default clients;
+export default users;
