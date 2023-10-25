@@ -1,0 +1,31 @@
+{
+  "private": true,
+  "name": "dolcemika",
+  "version": "1.0.0",
+  "description": "A business, client, stock and administration, app",
+  "main": "index.js",
+  "author": "Sergio Yalux",
+  "license": "MIT",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:client": "yarn --cwd frontend dev --host",
+    "dev:server": "yarn --cwd backend dev",
+    "dev:server:logs": "yarn --cwd backend dev:logs",
+    "dev:both": "npm-run-all --parallel dev:server dev:client",
+    "build:client": "yarn --cwd frontend build",
+    "build:server": "yarn --cwd backend build",
+    "build:both": "npm-run-all build:server build:client",
+    "start:server": "yarn --cwd backend start",
+    "start": "npm-run-all build:both start:server"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
