@@ -31,13 +31,22 @@ INSERT INTO order_states (state) VALUES ('finished'); -- the order was either de
 CREATE TABLE user (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	role_id TINYINT(1) NOT NULL,
-	username VARCHAR(100) NOT NULL UNIQUE,
 	email VARCHAR(100) NOT NULL UNIQUE,
-	fullname VARCHAR(100) NOT NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	CONSTRAINT fk__user__user_roles
 	FOREIGN KEY (role_id)
 	REFERENCES user_roles (id)
+);
+
+CREATE TABLE user_information (
+	user_id INT NOT NULL,
+	fullname VARCHAR(100) NOT NULL,
+	cellphone VARCHAR(20) NOT NUll,
+	birthdate DATE NOT NULL,
+	CONSTRAINT fk__user_information__user
+	FOREIGN KEY (user_id)
+	REFERENCES user (id)
 );
 
 CREATE TABLE user_auth (
@@ -52,9 +61,7 @@ CREATE TABLE user_auth (
 CREATE TABLE user_client (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	user_id INT NOT NULL,
-	cellphone VARCHAR(20) NOT NULL,
-	birthdate DATE NOT NULL,
-    PRIMARY KEY (id),
+	PRIMARY KEY (id),
 	CONSTRAINT fk__user_client__user
 	FOREIGN KEY (user_id)
 	REFERENCES user (id)
@@ -62,8 +69,8 @@ CREATE TABLE user_client (
 
 CREATE TABLE user_admin (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    PRIMARY KEY (id),
+	user_id INT NOT NULL,
+	PRIMARY KEY (id),
 	CONSTRAINT fk__user_admin__user
 	FOREIGN KEY (user_id)
 	REFERENCES user (id)
@@ -173,15 +180,3 @@ CREATE TABLE order_menu_description (
 	FOREIGN KEY (menu_item_id)
 	REFERENCES menu_item (id)
 );
-
-DELIMITER //
-CREATE TRIGGER set__menu_item__group_id__before_insert
-BEFORE INSERT ON menu_item
-FOR EACH ROW
-BEGIN
-	IF NEW.parent_id IS NULL THEN
-		SET NEW.group_id = LAST_INSERT_ID() + 1;
-	END IF;
-END;
-//
-DELIMITER ;
