@@ -12,20 +12,20 @@ INSERT INTO user_roles (role) VALUES ('admin');
 INSERT INTO user_roles (role) VALUES ('client');
 INSERT INTO user_roles (role) VALUES ('god');
 
-CREATE TABLE client_order_states (
+CREATE TABLE order_states (
 	id TINYINT(1) NOT NULL UNIQUE AUTO_INCREMENT,
 	state VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id)
 );
  
-INSERT INTO client_order_states (state) VALUES ('just arrived'); -- client sends order
-INSERT INTO client_order_states (state) VALUES ('accepted'); -- admin accepts it
-INSERT INTO client_order_states (state) VALUES ('started'); -- bro started cooking
-INSERT INTO client_order_states (state) VALUES ('paused'); -- bro stopped cooking
-INSERT INTO client_order_states (state) VALUES ('revising'); -- client might have added a post-ordered detail => admin reviews it
-INSERT INTO client_order_states (state) VALUES ('canceled'); -- both client or admin can cancel - client before 'to be delivered', admin anytime
-INSERT INTO client_order_states (state) VALUES ('to be delivered'); -- bro finished cooking
-INSERT INTO client_order_states (state) VALUES ('finished'); -- the order was either delivered or just ended for any other reason - no need to take care of
+INSERT INTO order_states (state) VALUES ('just arrived'); -- client sends order
+INSERT INTO order_states (state) VALUES ('accepted'); -- admin accepts it
+INSERT INTO order_states (state) VALUES ('started'); -- bro started cooking
+INSERT INTO order_states (state) VALUES ('paused'); -- bro stopped cooking
+INSERT INTO order_states (state) VALUES ('revising'); -- client might have added a post-ordered detail => admin reviews it
+INSERT INTO order_states (state) VALUES ('canceled'); -- both client or admin can cancel - client before 'to be delivered', admin anytime
+INSERT INTO order_states (state) VALUES ('to be delivered'); -- bro finished cooking
+INSERT INTO order_states (state) VALUES ('finished'); -- the order was either delivered or just ended for any other reason - no need to take care of
 
 
 CREATE TABLE user (
@@ -50,16 +50,20 @@ CREATE TABLE user_auth (
 );
 
 CREATE TABLE user_client (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	user_id INT NOT NULL,
 	cellphone VARCHAR(20) NOT NULL,
 	birthdate DATE NOT NULL,
+    PRIMARY KEY (id),
 	CONSTRAINT fk__user_client__user
 	FOREIGN KEY (user_id)
 	REFERENCES user (id)
 );
 
-CREATE TABLE user_admin ( -- this might not be needed, but it feels weird to only have an user_client so I'd try to find some data worth saving here
-	user_id INT NOT NULL,
+CREATE TABLE user_admin (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    PRIMARY KEY (id),
 	CONSTRAINT fk__user_admin__user
 	FOREIGN KEY (user_id)
 	REFERENCES user (id)
@@ -82,9 +86,10 @@ CREATE TABLE menu_option (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	menu_item_id INT NOT NULL UNIQUE, -- should be only all parent_id=null rows from menu_item table
 	is_available BIT(1) NOT NULL,
+    image LONGBLOB DEFAULT NULL,
 	price FLOAT NOT NULL,
 	PRIMARY KEY (id),
-	CONSTRAINT fk__menu__menu_item
+	CONSTRAINT fk__menu_option__menu_item
 	FOREIGN KEY (menu_item_id)
 	REFERENCES menu_item (id)
 );
@@ -121,50 +126,50 @@ CREATE TABLE client_order (
 	estimated_for DATETIME DEFAULT NULL,
 	detail VARCHAR(200) DEFAULT NULL,
 	PRIMARY KEY (id),
-	CONSTRAINT fk__client_order__client
+	CONSTRAINT fk__client_order__user_client
 	FOREIGN KEY (client_id)
-	REFERENCES client (id)
+	REFERENCES user_client (id)
 );
 
-CREATE TABLE client_order_comment (
+CREATE TABLE order_comment (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	client_order_id INT NOT NULL,
+	order_id INT NOT NULL,
 	detail VARCHAR(300) NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT fk__client_order_comment__client_order
-	FOREIGN KEY (client_order_id)
+	CONSTRAINT fk__order_comment__client_order
+	FOREIGN KEY (order_id)
 	REFERENCES client_order (id)
 );
 
-CREATE TABLE client_order_current_state (
-	client_order_id INT NOT NULL,
-	client_order_state_id TINYINT(1) NOT NULL,
+CREATE TABLE order_current_state (
+	order_id INT NOT NULL,
+	order_state_id TINYINT(1) NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT fk__client_order_current_state__client_order
-	FOREIGN KEY (client_order_id)
+	CONSTRAINT fk__order_current_state__client_order
+	FOREIGN KEY (order_id)
 	REFERENCES client_order (id),
-	CONSTRAINT fk__client_order_current_state__client_order_states
-	FOREIGN KEY (client_order_state_id)
-	REFERENCES client_order_states (id)
+	CONSTRAINT fk__order_current_state__order_states
+	FOREIGN KEY (order_state_id)
+	REFERENCES order_states (id)
 );
 
-CREATE TABLE client_order_menu_selected (
+CREATE TABLE order_menu (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	client_order_id INT NOT NULL,
+	order_id INT NOT NULL,
 	price FLOAT NOT NULL,
 	detail VARCHAR(200) DEFAULT NULL,
-	CONSTRAINT fk__menu_selected__client_order
-	FOREIGN KEY (client_order_id)
+	CONSTRAINT fk__order_menu__client_order
+	FOREIGN KEY (order_id)
 	REFERENCES client_order (id)
 );
 
-CREATE TABLE client_order_menu_selected_description (
-	client_order_menu_selected_id INT NOT NULL,
+CREATE TABLE order_menu_description (
+	order_menu_id INT NOT NULL,
 	menu_item_id INT NOT NULL,
-	CONSTRAINT fk__menu_selected_description__menu_selected
-	FOREIGN KEY (menu_selected_id)
-	REFERENCES menu_selected (id),
-	CONSTRAINT fk__menu_selected_description__menu_item
+	CONSTRAINT fk__order_menu_description__order_menu
+	FOREIGN KEY (order_menu_id)
+	REFERENCES order_menu (id),
+	CONSTRAINT fk__order_menu_description__menu_item
 	FOREIGN KEY (menu_item_id)
 	REFERENCES menu_item (id)
 );
