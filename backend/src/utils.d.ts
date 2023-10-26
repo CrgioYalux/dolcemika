@@ -16,3 +16,16 @@ type EffectfulQueryResult = {
 type EffectlessQueryResult<T> = T[];
 
 // Database Tables : Development Types
+
+type User = {
+	id: number;
+	role_id: number;
+	email: string;
+	fullname: string;
+    created_at: Date;
+	cellphone: string;
+	birthdate: Date;
+    password: string;
+    hash: string;
+    salt: string;
+};
