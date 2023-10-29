@@ -1,3 +1,5 @@
+USE `dolcemika`;
+
 DELIMITER //
 
 CREATE TRIGGER set_group_id_to_id_if_null_parent

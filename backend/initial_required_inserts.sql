@@ -1,5 +1,7 @@
 -- Initial required INSERTS
 
+USE `dolcemika`;
+
 INSERT INTO user_roles (role) VALUES ('client');
 INSERT INTO user_roles (role) VALUES ('admin');
 INSERT INTO user_roles (role) VALUES ('god');

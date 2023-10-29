@@ -1,3 +1,5 @@
+USE `dolcemika`;
+
 DELIMITER //
 CREATE PROCEDURE CreateUserClient(IN email VARCHAR(100))
 BEGIN
