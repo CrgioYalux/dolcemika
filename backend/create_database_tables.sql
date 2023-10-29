@@ -8,25 +8,11 @@ CREATE TABLE user_roles (
 	PRIMARY KEY (id)
 );
 
-INSERT INTO user_roles (role) VALUES ('admin');
-INSERT INTO user_roles (role) VALUES ('client');
-INSERT INTO user_roles (role) VALUES ('god');
-
 CREATE TABLE order_states (
 	id TINYINT(1) NOT NULL UNIQUE AUTO_INCREMENT,
 	state VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id)
 );
- 
-INSERT INTO order_states (state) VALUES ('just arrived'); -- client sends order
-INSERT INTO order_states (state) VALUES ('accepted'); -- admin accepts it
-INSERT INTO order_states (state) VALUES ('started'); -- bro started cooking
-INSERT INTO order_states (state) VALUES ('paused'); -- bro stopped cooking
-INSERT INTO order_states (state) VALUES ('revising'); -- client might have added a post-ordered detail => admin reviews it
-INSERT INTO order_states (state) VALUES ('canceled'); -- both client or admin can cancel - client before 'to be delivered', admin anytime
-INSERT INTO order_states (state) VALUES ('to be delivered'); -- bro finished cooking
-INSERT INTO order_states (state) VALUES ('finished'); -- the order was either delivered or just ended for any other reason - no need to take care of
-
 
 CREATE TABLE user (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
@@ -39,7 +25,7 @@ CREATE TABLE user (
 	REFERENCES user_roles (id)
 );
 
-CREATE TABLE user_information (
+CREATE TABLE user_description (
 	user_id INT NOT NULL,
 	fullname VARCHAR(100) NOT NULL,
 	cellphone VARCHAR(20) NOT NUll,

@@ -2,7 +2,7 @@ DELIMITER //
 CREATE PROCEDURE CreateUserClient(IN email VARCHAR(100))
 BEGIN
 	-- Create a variable to store the 'client' role id
-    DECLARE client_role_id INT DEFAULT -1;
+    DECLARE client_role_id TINYINT DEFAULT -1;
     
     -- Find the role and assign its id to the before-defined variable
     SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client';
@@ -17,7 +17,7 @@ END;
 CREATE PROCEDURE CreateUserAdmin(IN email VARCHAR(100))
 BEGIN
 	-- Create a variable to store the 'client' role id
-    DECLARE admin_role_id INT DEFAULT -1;
+    DECLARE admin_role_id TINYINT DEFAULT -1;
     
     -- Find the role and assign its id to the before-defined variable
     SELECT ur.id INTO admin_role_id FROM user_roles AS ur WHERE ur.role = 'admin';
