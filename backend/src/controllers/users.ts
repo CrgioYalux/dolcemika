@@ -13,13 +13,17 @@ enum UserOperationQuery {
     `,
     PublicFindById = `
         SELECT
-            u.id, u.email, ud.fullname, ud.birthdate, ud.cellphone
+            u.id, ur.role, u.email, ud.fullname, ud.birthdate, ud.cellphone
         FROM 
             user AS u
         JOIN
             user_description AS ud
         ON
             u.id = ud.user_id
+        JOIN
+            user_roles AS ur
+        ON 
+            u.role_id = ur.id
         WHERE
             u.id = ?
     `,
@@ -90,8 +94,8 @@ interface UserOperation {
         Action: (
             pool: PoolConnection,
             payload: Pick<User, 'id'>
-        ) => Promise<{ found: true, user: Pick<User,'id' | 'email' | 'fullname' | 'birthdate' | 'cellphone'> } | { found: false, message: string }>;
-        QueryReturnType: EffectlessQueryResult<Pick<User,'id' | 'email' | 'fullname' | 'birthdate' | 'cellphone'>>;
+        ) => Promise<{ found: true, user: Pick<User,'id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'> } | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<User,'id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'>>;
     };
     InternalFindByEmail: {
         Action: (
