@@ -12,22 +12,23 @@ BEGIN
 END;
 //
 
-CREATE TRIGGER create_client_from_user
+CREATE TRIGGER register_user_by_role
 AFTER INSERT
 ON user
 FOR EACH ROW
 BEGIN
-	INSERT INTO user_client (user_id) VALUES (NEW.id);
-END;
-//
+	DECLARE client_role_id TINYINT DEFAULT -1;
 
-CREATE TRIGGER create_admin_from_user
-AFTER INSERT
-ON user
-FOR EACH ROW
-BEGIN
-	INSERT INTO user_admin (user_id) VALUES (NEW.id);
+	SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client';
+
+	IF NEW.role_id = client_role_id THEN
+		INSERT INTO user_client (user_id) VALUES (NEW.id);
+	ELSE
+		INSERT INTO user_admin (user_id) VALUES (NEW.id);
+	END IF;
 END;
 //
 
 DELIMITER ;
+
+

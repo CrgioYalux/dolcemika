@@ -4,7 +4,6 @@ USE `dolcemika`;
 
 INSERT INTO user_roles (role) VALUES ('client');
 INSERT INTO user_roles (role) VALUES ('admin');
-INSERT INTO user_roles (role) VALUES ('god');
 
 INSERT INTO order_states (state) VALUES ('just arrived'); -- client sends order
 INSERT INTO order_states (state) VALUES ('accepted'); -- admin accepts it
