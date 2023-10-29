@@ -1,7 +1,9 @@
 import cors from 'cors';
 import express from 'express';
 
-import environment from './environment';
+import API from './api';
+
+import Middlewares from './middlewares';
 
 import type { Express } from 'express';
 
@@ -13,25 +15,18 @@ function create(): Express {
     app.use(express.json());
     app.use(cors());
 
-    environment.SHOW_LOGS && app.all('/**', (req, _res, next) => {
-        console.log(`
-            ${req.method} ${req.url} at ${Date.now()}
-        `);
-        next();
-    });
-
     app.get('/ping', (_req, res) => {
         res.status(200).send('pong').end();
     });
 
-    // app.use(api.routers.login);
+    app.use(Middlewares.Logs);
+    app.use(API.Router.Users);
     // app.use(middlewares.clients.auth);
     // app.use(api.routers.resources);
-
-    app.all('/**', (_req, res) => {
-        res.status(404).end();
-    });
-
+    
+    app.use(Middlewares.ErrorHandling);
+    app.use(Middlewares.NotFound);
+    
     return app;
 };
 

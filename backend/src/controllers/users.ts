@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
 
-import type { PoolConnection } from "mysql";
-
 import helpers from '../helpers';
+
+import type { PoolConnection } from "mysql";
 
 enum UserOperationQuery {
     CreateClient = `
@@ -17,9 +17,9 @@ enum UserOperationQuery {
         FROM 
             user AS u
         JOIN
-            user_information AS ui
+            user_description AS ud
         ON
-            u.id = ui.user_id
+            u.id = ud.user_id
         WHERE
             u.id = ?
     `,
@@ -357,7 +357,7 @@ const Auth: UserOperation['Auth']['Action'] = (pool, payload) => {
     });
 };
 
-const User = {
+const Users = {
     CreateClient,
     CreateAdmin,
     AddAuth,
@@ -366,4 +366,4 @@ const User = {
     PublicFindById
 };
 
-export default User;
+export default Users;

@@ -3,7 +3,7 @@ import environment from '../environment';
 
 import type { Request, Response, NextFunction } from "express";
 
-const auth = (request: Request, response: Response, next: NextFunction): void => {
+const Auth = (request: Request, response: Response, next: NextFunction): void => {
     const authHeader = request.headers.authorization;
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -24,6 +24,35 @@ const auth = (request: Request, response: Response, next: NextFunction): void =>
     }
 };
 
-const users = { auth };
+const ErrorHandling = (error: Error, request: Request, response: Response, next: NextFunction): void => {
+    if (error) {
+        environment.SHOW_LOGS && console.error(error);
 
-export default users;
+        response.status(500).send({ message: 'Server Error' }).end();
+    }
+
+    next();
+};
+
+const NotFound = (request: Request, response: Response, next: NextFunction): void => {
+    response.status(404).end();
+};
+
+const Logs = (request: Request, response: Response, next: NextFunction): void => {
+    if (environment.SHOW_LOGS) {
+        console.log(`
+            ${request.method} ${request.url} at ${Date.now()}
+        `);
+    }
+
+    next();
+};
+
+const Middlewares = {
+    Auth,
+    ErrorHandling,
+    NotFound,
+    Logs,
+};
+
+export default Middlewares;
