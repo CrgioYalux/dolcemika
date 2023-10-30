@@ -1,3 +1,5 @@
+DROP SCHEMA `dolcemika`;
+
 CREATE SCHEMA `dolcemika`;
 
 USE `dolcemika`;
@@ -68,7 +70,7 @@ CREATE TABLE menu_item (
 	parent_id INT DEFAULT NULL,
 	title VARCHAR(100) NOT NULL,
 	detail VARCHAR(100) DEFAULT NULL,
-	price FLOAT NOT NULL,
+	price FLOAT DEFAULT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT fk__menu_item__menu_item
 	FOREIGN KEY (parent_id)
@@ -77,22 +79,12 @@ CREATE TABLE menu_item (
 
 CREATE TABLE menu_option (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	menu_item_id INT NOT NULL UNIQUE, -- should be only all parent_id=null rows from menu_item table
+	body VARCHAR(250) NOT NULL,
 	is_available BIT(1) NOT NULL,
+    stock INT NOT NULL,
     image LONGBLOB DEFAULT NULL,
 	price FLOAT NOT NULL,
-	PRIMARY KEY (id),
-	CONSTRAINT fk__menu_option__menu_item
-	FOREIGN KEY (menu_item_id)
-	REFERENCES menu_item (id)
-);
-
-CREATE TABLE menu_option_stock (
-	menu_option_id INT NOT NULL UNIQUE,
-	stock INT NOT NULL,
-	CONSTRAINT fk__menu_option_stock__menu_option
-	FOREIGN KEY (menu_option_id)
-	REFERENCES menu_option (id)
+	PRIMARY KEY (id)
 );
 
 CREATE TABLE ingredient (
@@ -117,7 +109,7 @@ CREATE TABLE client_order (
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 	estimated_for DATETIME DEFAULT NULL,
-	detail VARCHAR(200) DEFAULT NULL,
+	detail VARCHAR(250) DEFAULT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT fk__client_order__user_client
 	FOREIGN KEY (client_id)
@@ -127,7 +119,7 @@ CREATE TABLE client_order (
 CREATE TABLE order_comment (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	order_id INT NOT NULL,
-	detail VARCHAR(300) NOT NULL,
+	detail VARCHAR(250) NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT fk__order_comment__client_order
 	FOREIGN KEY (order_id)
@@ -151,18 +143,8 @@ CREATE TABLE order_menu (
 	order_id INT NOT NULL,
 	price FLOAT NOT NULL,
 	detail VARCHAR(200) DEFAULT NULL,
+    body VARCHAR(250) NOT NULL,
 	CONSTRAINT fk__order_menu__client_order
 	FOREIGN KEY (order_id)
 	REFERENCES client_order (id)
-);
-
-CREATE TABLE order_menu_description (
-	order_menu_id INT NOT NULL,
-	menu_item_id INT NOT NULL,
-	CONSTRAINT fk__order_menu_description__order_menu
-	FOREIGN KEY (order_menu_id)
-	REFERENCES order_menu (id),
-	CONSTRAINT fk__order_menu_description__menu_item
-	FOREIGN KEY (menu_item_id)
-	REFERENCES menu_item (id)
 );

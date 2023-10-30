@@ -12,6 +12,7 @@ BEGIN
 END;
 //
 
+DELIMITER //
 CREATE TRIGGER register_user_by_role
 AFTER INSERT
 ON user
