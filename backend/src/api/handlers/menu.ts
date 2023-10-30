@@ -4,13 +4,6 @@ import db from '../../db';
 import type { NextFunction, Request, Response } from 'express';
 
 const Get = (request: Request, response: Response, next: NextFunction): void => {
-    const id = request.params[0];
-
-    if (id === undefined) {
-        response.status(400).send({ message: 'No user ID provided' });
-        return;
-    }
-
     db.pool.getConnection((err, connection) => {
         if (err) {
             const error = new Error('Could not connect to database');
@@ -18,29 +11,21 @@ const Get = (request: Request, response: Response, next: NextFunction): void => 
             return;
         }
 
-        Controllers.Users.PublicFindById(connection, { id: Number(id) })
+        Controllers.Menu.Get(connection)
         .then((res) => {
             if (!res.found) {
                 response.status(404).send({ message: res.message });
                 return;
             }
 
-            response.status(201).send({ user: res.user });
+            response.status(201).send({ menu: res.menu });
         })
         .catch(next);
     });
 };
 
-const Post = (request: Request<{}, {}, { email: string, password: string }>, response: Response, next: NextFunction): void => {
-    if (!request.body.email || !request.body.password) {
-        response.status(400).send({ message: '' }).end();
-    }
-    
-};
-
-const Users = {
+const Menu = {
     Get,
-    Post
 };
 
-export default Users;
+export default Menu;

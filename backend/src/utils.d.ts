@@ -30,3 +30,22 @@ type User = {
     hash: string;
     salt: string;
 };
+
+type MenuItem = {
+    id: number;
+    group_id: number;
+    parent_id: number | null;
+    title: string;
+    detail: string;
+    price: number;
+};
+
+type InternalMenuItemNode = Omit<MenuItem, 'parent_id' | 'group_id'> & {
+    parent: InternalMenuItemNode | null;
+};
+
+type MenuItemNode = Omit<MenuItem, 'parent_id' | 'group_id'> & {
+    children: MenuItemNode[];
+};
+
+type Menu = MenuItemNode[];

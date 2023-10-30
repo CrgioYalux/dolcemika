@@ -1,7 +1,9 @@
 import Users from './users';
+import Menu from './menu';
 
 const Controllers = {
-    Users
+    Users,
+    Menu,
 };
 
 export default Controllers;

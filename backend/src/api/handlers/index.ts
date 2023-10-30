@@ -1,7 +1,9 @@
-import { Users } from './users';
+import Users from './users';
+import Menu from './menu';
 
 const Handlers = {
-    Users
+    Users,
+    Menu,
 };
 
 export default Handlers;

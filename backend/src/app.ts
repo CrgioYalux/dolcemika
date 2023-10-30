@@ -21,6 +21,7 @@ function create(): Express {
 
     app.use(Middlewares.Logs);
     app.use(API.Router.Users);
+    app.use(API.Router.Menu);
     // app.use(middlewares.clients.auth);
     // app.use(api.routers.resources);
     

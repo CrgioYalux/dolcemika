@@ -5,8 +5,13 @@ const USERS = {
     PUT_DESCRIPTION: /\/api\/users\/(\d+)\/description\/?/,
 };
 
+const MENU = {
+    GET: /\/api\/menu\/?/,
+};
+
 const ROUTES = { 
-    USERS
+    USERS,
+    MENU,
 };
 
 export { ROUTES };

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 
 import helpers from '../helpers';
 
-import type { PoolConnection } from "mysql";
+import type { PoolConnection } from 'mysql';
 
 enum UserOperationQuery {
     CreateClient = `
