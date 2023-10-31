@@ -2,6 +2,19 @@ USE `dolcemika`;
 
 DELIMITER //
 
+CREATE TRIGGER register_order_just_arrived_state
+AFTER INSERT
+ON client_order
+FOR EACH ROW
+BEGIN
+	DECLARE just_arrived_order_state_id TINYINT DEFAULT -1;
+    SELECT os.id INTO just_arrived_order_state_id FROM order_states AS os WHERE os.state = 'just arrived';
+    IF just_arrived_order_state_id != -1 THEN
+    INSERT INTO order_current_state (order_id, order_state_id) VALUES (NEW.id, just_arrived_order_state_id);
+    END IF;
+END;
+//
+
 CREATE TRIGGER set_group_id_to_id_if_null_parent
 BEFORE INSERT ON menu_item
 FOR EACH ROW
@@ -12,7 +25,6 @@ BEGIN
 END;
 //
 
-DELIMITER //
 CREATE TRIGGER register_user_by_role
 AFTER INSERT
 ON user

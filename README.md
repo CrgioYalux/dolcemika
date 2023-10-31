@@ -8,6 +8,7 @@
 - (Required) Finish project
 - (Required) Don't allow to change user's description
 - (Required) Require the user's description to create an user so don't have to create more pages
+- (Required) MenuOption might not be needed if MenuItem has a 'is_available' attribute
 
 ### Ideas for later
 

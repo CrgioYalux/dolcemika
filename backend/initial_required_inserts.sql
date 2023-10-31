@@ -19,5 +19,7 @@ INSERT INTO menu_item (title) VALUES ('Torta');
 INSERT INTO menu_item (group_id, parent_id, title) VALUES (1, 1, 'Bizcochuelo');
 INSERT INTO menu_item (group_id, parent_id, title) VALUES (1, 1, 'Chocolate');
 
-SELECT * FROM menu_item;
+CALL CreateUserClient('user@gmail.com');
 
+INSERT INTO client_order (client_id, total_price) VALUES (1, 10.00);
+INSERT INTO order_current_state (order_id, order_state_id) VALUES (1, 4);
