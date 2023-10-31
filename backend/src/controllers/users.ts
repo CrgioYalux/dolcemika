@@ -161,7 +161,9 @@ const CreateClient: UserOperation['CreateClient']['Action'] = (pool, payload) =>
                     });
                 })
                 .catch((err3) => {
-                    reject({ clientAuthCreationError: err3 });
+                    pool.rollback(() => {
+                        reject({ clientAuthCreationError: err3 });
+                    });
                 });
             });
         });

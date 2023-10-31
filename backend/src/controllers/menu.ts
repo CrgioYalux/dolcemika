@@ -7,16 +7,16 @@ enum MenuOperationQuery {
         VALUES
             (?, ?, ?, ?)
     `,
-    GET = `
+    Get = `
         SELECT * FROM menu_item AS mi
-    `
+    `,
 };
 
 interface MenuOperation {
     AddItem: {
         Action: (
             pool: PoolConnection,
-            payload: Pick<MenuItem, 'title' | 'detail' | 'price' | 'group_id' | 'parent_id'>
+            payload: Pick<MenuItem, 'group_id' | 'parent_id' | 'title' | 'detail' | 'price'>
         ) => Promise<{ created: true, menu_item: Pick<MenuItem, 'id'> } | { created: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
     };
@@ -26,12 +26,11 @@ interface MenuOperation {
         ) => Promise<{ found: true, menu: Menu } | { found: false, message: string }>;
         QueryReturnType: EffectlessQueryResult<MenuItem>;
     };
-    
 };
 
 const Get: MenuOperation['Get']['Action'] = (pool) => {
     return new Promise((resolve, reject) => {
-        pool.query(MenuOperationQuery.GET, (err, results) => {
+        pool.query(MenuOperationQuery.Get, (err, results) => {
             if (err) {
                 reject({ getMenuError: err });
                 return;

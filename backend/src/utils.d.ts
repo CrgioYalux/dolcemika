@@ -40,6 +40,42 @@ type MenuItem = {
     price: number;
 };
 
+type Order = {
+    id: number;
+    client_id: number;
+    state_id: number;
+    total_price: number;
+    created_at: Date;
+    updated_at: Date;
+    estimated_for: Date;
+    detail: string;
+    state: string;
+};
+
+type ClientOrderAtLastState = {
+    order_id: number;
+    total_price: number;
+    created_at: Date;
+    updated_at: Date;
+    estimated_for: Date;
+    detail: string;
+    last_state_change_at: Date;
+    state: string;
+    email: string;
+    fullname: string;
+    cellphone: string;
+};
+
+type OrderMenu = {
+    id: number;
+    order_id: number;
+    price: number;
+    detail: string;
+    body: string;
+};
+
+// Transformations
+
 type InternalMenuItemNode = Omit<MenuItem, 'parent_id' | 'group_id'> & {
     parent: InternalMenuItemNode | null;
 };

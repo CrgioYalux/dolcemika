@@ -18,7 +18,7 @@ const Get = (request: Request, response: Response, next: NextFunction): void => 
                 return;
             }
 
-            response.status(201).send({ menu: res.menu });
+            response.status(200).send({ menu: res.menu });
         })
         .catch(next);
     });
