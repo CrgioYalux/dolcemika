@@ -23,3 +23,5 @@ CALL CreateUserClient('user@gmail.com');
 
 INSERT INTO client_order (client_id, total_price) VALUES (1, 10.00);
 INSERT INTO order_current_state (order_id, order_state_id) VALUES (1, 4);
+
+DROP TRIGGER register_user_by_role;

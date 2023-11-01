@@ -25,6 +25,7 @@ BEGIN
 END;
 //
 
+DELIMITER //
 CREATE TRIGGER register_user_by_role
 AFTER INSERT
 ON user
@@ -32,7 +33,7 @@ FOR EACH ROW
 BEGIN
 	DECLARE client_role_id TINYINT DEFAULT -1;
 
-	SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client';
+	SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client' LIMIT 1;
 
 	IF NEW.role_id = client_role_id THEN
 		INSERT INTO user_client (user_id) VALUES (NEW.id);

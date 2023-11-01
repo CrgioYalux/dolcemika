@@ -7,7 +7,7 @@ BEGIN
     DECLARE client_role_id TINYINT DEFAULT -1;
     
     -- Find the role and assign its id to the before-defined variable
-    SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client';
+    SELECT ur.id INTO client_role_id FROM user_roles AS ur WHERE ur.role = 'client' LIMIT 1;
     
     -- Use an IF statement to conditionally insert into table B
     IF client_role_id != -1 THEN
@@ -18,11 +18,11 @@ END;
 
 CREATE PROCEDURE CreateUserAdmin(IN email VARCHAR(100))
 BEGIN
-	-- Create a variable to store the 'client' role id
+	-- Create a variable to store the 'admin' role id
     DECLARE admin_role_id TINYINT DEFAULT -1;
     
     -- Find the role and assign its id to the before-defined variable
-    SELECT ur.id INTO admin_role_id FROM user_roles AS ur WHERE ur.role = 'admin';
+    SELECT ur.id INTO admin_role_id FROM user_roles AS ur WHERE ur.role = 'admin' LIMIT 1;
     
     -- Use an IF statement to conditionally insert into table B
     IF admin_role_id != -1 THEN
@@ -30,5 +30,8 @@ BEGIN
     END IF;
 END;
 //
-	--
+
 DELIMITER ;
+
+DROP PROCEDURE CreateUserClient;
+DROP PROCEDURE CreateUserAdmin;
