@@ -5,11 +5,32 @@ import helpers from '../helpers';
 import type { PoolConnection } from 'mysql';
 
 enum UserOperationQuery {
-    CreateClient = `
-        CALL CreateUserClient(?)
+    InternalFindClientRoleId = `
+        SELECT
+            ur.id as role_id
+        FROM
+            user_roles AS ur
+        WHERE
+            ur.role = 'client'
+        LIMIT 1
     `,
-    CreateAdmin = `
-        CALL CreateUserAdmin(?)
+    CreateUser = `
+        INSERT INTO 
+            user (role_id, email)
+        VALUES 
+            (?, ?)
+    `,
+    AddDescription = `
+        INSERT INTO
+            user_description (user_id, fullname, cellphone, birthdate)
+        VALUES
+            (?, ?, ?, ?)
+    `,
+    AddAuth = `
+        INSERT INTO 
+            user_auth (user_id, hash, salt)
+        VALUES
+            (?, ?, ?)
     `,
     PublicFindById = `
         SELECT
@@ -35,12 +56,6 @@ enum UserOperationQuery {
         WHERE 
             u.email = ?
     `,
-    AddAuth = `
-        INSERT INTO 
-            user_auth (user_id, hash, salt)
-        VALUES
-            (?, ?, ?)
-    `,
     Auth = `
         SELECT 
             u.id, ua.hash, ua.salt
@@ -53,26 +68,19 @@ enum UserOperationQuery {
         WHERE
             u.id = ?
     `,
-    AddDescription = `
-        INSERT INTO
-            user_description (user_id, fullname, cellphone, birthdate)
-        VALUES
-            (?, ?, ?, ?)
-    `,
 };
 
 interface UserOperation {
-    CreateClient: {
+    InternalFindClientRoleId: {
         Action: (
-            pool: PoolConnection,
-            payload: Pick<User, 'email' | 'password'>
-        ) => Promise<{ created: true, user: Pick<User, 'id'> } | { created: false, message: string }>;
-        QueryReturnType: EffectfulQueryResult;
+            pool: PoolConnection
+        ) => Promise<{ found: true } & Pick<User, 'role_id'> | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<User, 'role_id'>>;
     };
-    CreateAdmin: {
+    CreateUser: {
         Action: (
             pool: PoolConnection,
-            payload: Pick<User, 'email' | 'password'>
+            payload: Pick<User, 'email' | 'role_id' >
         ) => Promise<{ created: true, user: Pick<User, 'id'> } | { created: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
     };
@@ -88,6 +96,13 @@ interface UserOperation {
             pool: PoolConnection,
             payload: Pick<User, 'id' | 'password'>
         ) => Promise<{ done: true } | { done: false, message: string }>;
+        QueryReturnType: EffectfulQueryResult;
+    };
+    CreateClient: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<User, 'email' | 'password' | 'fullname' | 'cellphone' | 'birthdate'>
+        ) => Promise<{ created: true, user: Pick<User, 'id'> } | { created: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
     };
     PublicFindById: {
@@ -119,102 +134,44 @@ interface UserOperation {
     };
 };
 
-const CreateClient: UserOperation['CreateClient']['Action'] = (pool, payload) => {
+const InternalFindClientRoleId: UserOperation['InternalFindClientRoleId']['Action'] = (pool) => {
     return new Promise((resolve, reject) => {
-        return pool.beginTransaction((err0) => {
-            if (err0) {
-                reject({ beginCreateClientTransactionError: err0 });
+        pool.query(UserOperationQuery.InternalFindClientRoleId, (err, results) => {
+            if (err) {
+                reject(err);
                 return;
             }
 
-            pool.query(UserOperationQuery.CreateClient, [payload.email], async (err1, results) => {
-                if (err1) {
-                    pool.rollback(() => {
-                        reject({ clientCreationError: err1 });
-                    });
-                    return;
-                }
+            const parsed = results as UserOperation['InternalFindClientRoleId']['QueryReturnType'];
 
-                const parsed = results as UserOperation['CreateClient']['QueryReturnType'];
+            if (!parsed.length) {
+                resolve({ found: false, message: 'Could not find client role id' });
+                return;
+            }
 
-                if (!parsed.affectedRows) {
-                    resolve({ created: false, message: 'Could not create client' });
-                    return;
-                }
+            const role_id = parsed[0].role_id;
 
-                AddAuth(pool, { id: parsed.insertId, password: payload.password })
-                .then((res) => {
-                    if (!res.done) {
-                        pool.rollback(() => {
-                            resolve({ created: false, message: 'Could not add authentication to client' });
-                        });
-                        return;
-                    }
-                    
-                    pool.commit((err2) => {
-                        if (err2) {
-                            reject({ commitCreateClientTransactionError: err2 });
-                            return;
-                        }
-
-                        resolve({ created: true, user: { id: parsed.insertId }});
-                    });
-                })
-                .catch((err3) => {
-                    pool.rollback(() => {
-                        reject({ clientAuthCreationError: err3 });
-                    });
-                });
-            });
+            resolve({ found: true, role_id });
         });
     });
 };
 
-const CreateAdmin: UserOperation['CreateAdmin']['Action'] = (pool, payload) => {
+const CreateUser: UserOperation['CreateUser']['Action'] = (pool, payload) => {
     return new Promise((resolve, reject) => {
-        return pool.beginTransaction((err0) => {
-            if (err0) {
-                reject({ beginCreateAdminTransactionError: err0 });
+        pool.query(UserOperationQuery.CreateUser, [payload.role_id, payload.email], (err, results) => {
+            if (err) {
+                reject(err);
                 return;
             }
 
-            pool.query(UserOperationQuery.CreateAdmin, [payload.email], async (err1, results) => {
-                if (err1) {
-                    pool.rollback(() => {
-                        reject({ adminCreationError: err1 });
-                    });
-                    return;
-                }
+            const parsed = results as UserOperation['CreateUser']['QueryReturnType'];
 
-                const parsed = results as UserOperation['CreateAdmin']['QueryReturnType'];
+            if (!parsed.affectedRows) {
+                resolve({ created: false, message: 'Could not create the user' });
+                return;
+            }
 
-                if (!parsed.affectedRows) {
-                    resolve({ created: false, message: 'Could not create admin' });
-                    return;
-                }
-
-                AddAuth(pool, { id: parsed.insertId, password: payload.password })
-                .then((res) => {
-                    if (!res.done) {
-                        pool.rollback(() => {
-                            resolve({ created: false, message: 'Could not add authentication to admin' });
-                        });
-                        return;
-                    }
-                    
-                    pool.commit((err2) => {
-                        if (err2) {
-                            reject({ commitCreateAdminTransactionError: err2 });
-                            return;
-                        }
-
-                        resolve({ created: true, user: { id: parsed.insertId }});
-                    });
-                })
-                .catch((err3) => {
-                    reject({ adminAuthCreationError: err3 });
-                });
-            });
+            resolve({ created: true, user: { id: parsed.insertId }});
         });
     });
 };
@@ -223,9 +180,9 @@ const AddDescription: UserOperation['AddDescription']['Action'] = (pool, payload
     return new Promise((resolve, reject) => {
         pool.query(UserOperationQuery.AddDescription, [payload.id, payload.fullname, payload.cellphone, payload.birthdate], (err, results) => {
             if (err) {
-                reject({ addDescriptionError: err });
+                reject(err);
                 return;
-            }
+            };
 
             const parsed = results as UserOperation['AddDescription']['QueryReturnType'];
 
@@ -263,6 +220,102 @@ const AddAuth: UserOperation['AddAuth']['Action'] = (pool, payload) => {
                 }
 
                 resolve({ done: true });
+            });
+        });
+    });
+};
+
+const CreateClient: UserOperation['CreateClient']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((errBegin) => {
+            if (errBegin) {
+                reject({ createClientBeginTransactionError: errBegin });
+                return;
+            }
+
+            InternalFindByEmail(pool, { email: payload.email })
+            .then((res0) => {
+                if (res0.found) {
+                    pool.rollback(() => {
+                        resolve({ created: false, message: 'There\'s already an account with that email' });
+                    });
+                    return;
+                }
+
+                InternalFindClientRoleId(pool)
+                .then((res1) => {
+                    if (!res1.found) {
+                        pool.rollback(() => {
+                            resolve({ created: false, message: res1.message });
+                        });
+                        return;
+                    }
+
+                    CreateUser(pool, { role_id: res1.role_id, email: payload.email })
+                    .then((res2) => {
+                        if (!res2.created) {
+                            pool.rollback(() => {
+                                resolve({ created: false, message: res2.message });
+                            });
+                            return;
+                        }
+
+                        AddDescription(pool, { id: res2.user.id, fullname: payload.fullname, cellphone: payload.cellphone, birthdate: payload.birthdate })
+                        .then((res3) => {
+                            if (!res3.done) {
+                                pool.rollback(() => {
+                                    resolve({ created: false, message: res3.message });
+                                });
+                                return;
+                            }
+
+                            AddAuth(pool, { id: res2.user.id, password: payload.password })
+                            .then((res4) => {
+                                if (!res4.done) {
+                                    pool.rollback(() => {
+                                        resolve({ created: false, message: res4.message });
+                                    });
+                                    return;
+                                }
+                                
+                                pool.commit((errCommit) => {
+                                    if (errCommit) {
+                                        pool.rollback(() => {
+                                            reject({ createClientCommitTransactionError: errCommit });
+                                        });
+                                    }
+
+                                    resolve({ created: true, user: { id: res2.user.id} });
+                                });
+                            })
+                            .catch((err) => {
+                                pool.rollback(() => {
+                                    reject({ addAuthError: err });
+                                });
+                            });
+                        })
+                        .catch((err) => {
+                            pool.rollback(() => {
+                                reject({ addDescriptionError: err });
+                            });
+                        });
+                    })
+                    .catch((err) => {
+                        pool.rollback(() => {
+                            reject({ createUserError: err });
+                        });
+                    });
+                })
+                .catch((err) => {
+                    pool.rollback(() => {
+                        reject({ findClientRoleIdError: err });
+                    });
+                });
+            })
+            .catch((err) => {
+                pool.rollback(() => {
+                    reject({ findByEmailError: err });
+                });
             });
         });
     });
@@ -365,11 +418,8 @@ const Auth: UserOperation['Auth']['Action'] = (pool, payload) => {
 
 const Users = {
     CreateClient,
-    CreateAdmin,
-    AddAuth,
-    AddDescription,
     Auth,
-    PublicFindById
+    PublicFindById,
 };
 
 export default Users;

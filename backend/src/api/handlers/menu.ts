@@ -6,19 +6,20 @@ import type { NextFunction, Request, Response } from 'express';
 const Get = (request: Request, response: Response, next: NextFunction): void => {
     db.pool.getConnection((err, connection) => {
         if (err) {
+            connection.release();
+
             const error = new Error('Could not connect to database');
             next(error);
+
             return;
         }
 
         Controllers.Menu.Get(connection)
         .then((res) => {
-            if (!res.found) {
-                response.status(404).send({ message: res.message });
-                return;
-            }
+            connection.release();
 
-            response.status(200).send({ menu: res.menu });
+            const status = res.found ? 302 : 404;
+            response.status(status).send(res);
         })
         .catch(next);
     });

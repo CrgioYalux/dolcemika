@@ -1,7 +1,7 @@
 const USERS = {
     GET: /^\/api\/users\/(\d+)\/?$/,
     AUTH: /^\/api\/users\/auth\/?$/,
-    POST: /^\/api\/users\/?$/,
+    POST_CLIENT: /^\/api\/users\/clients\/?$/,
     // PUT_DESCRIPTION: /^\/api\/users\/(\d+)\/description\/?$/,
 };
 
