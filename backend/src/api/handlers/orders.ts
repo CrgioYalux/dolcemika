@@ -54,9 +54,65 @@ const GetById = (request: Request, response: Response, next: NextFunction): void
     });
 };
 
+const GetStates = (request: Request, response: Response, next: NextFunction): void => {
+    db.pool.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.GetStates(connection)
+        .then((res) => {
+            connection.release();
+
+            const status = res.found ? 302 : 404;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const PostState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+    const state_id = request.params[1];
+
+    console.log(order_id, state_id);
+
+    if (order_id === undefined || state_id === undefined) {
+        response.status(400).send({ message: 'No order ID or state ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeState(connection, { id: Number(order_id), state_id: Number(state_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
 const Orders = {
     Get,
     GetById,
+    GetStates,
+    PostState,
 };
 
 export default Orders;
