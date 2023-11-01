@@ -26,3 +26,6 @@ GetMenuSequence([1, 4, 5]) => 'Torta Bizcochuelo Chocolate'
 { name: 1-4-2, count: 10 }
 { name: 1-4-10, count: 10 }
 ]
+
+### [Stuff learned](/docs/an_unnecessary_fix.md)
+
