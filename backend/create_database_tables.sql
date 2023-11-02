@@ -68,23 +68,22 @@ CREATE TABLE menu_item (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
 	group_id INT NOT NULL,
 	parent_id INT DEFAULT NULL,
-	title VARCHAR(100) NOT NULL,
-	detail VARCHAR(100) DEFAULT NULL,
-	price FLOAT DEFAULT NULL,
+    is_available BIT(1) NOT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT fk__menu_item__menu_item
 	FOREIGN KEY (parent_id)
 	REFERENCES menu_item (id)
 );
 
-CREATE TABLE menu_option (
-	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	body VARCHAR(250) NOT NULL,
-	is_available BIT(1) NOT NULL,
-    stock INT NOT NULL,
+CREATE TABLE menu_item_description (
+	menu_item_id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    detail VARCHAR(100) DEFAULT NULL,
+    price FLOAT DEFAULT NULL,
     image LONGBLOB DEFAULT NULL,
-	price FLOAT NOT NULL,
-	PRIMARY KEY (id)
+    CONSTRAINT fk__menu_item_description__menu_item
+    FOREIGN KEY (menu_item_id)
+    REFERENCES menu_item (id)
 );
 
 CREATE TABLE ingredient (

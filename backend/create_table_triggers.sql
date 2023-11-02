@@ -8,7 +8,7 @@ ON client_order
 FOR EACH ROW
 BEGIN
 	DECLARE just_arrived_order_state_id TINYINT DEFAULT -1;
-    SELECT os.id INTO just_arrived_order_state_id FROM order_states AS os WHERE os.state = 'just arrived';
+    SELECT os.id INTO just_arrived_order_state_id FROM order_states AS os WHERE os.state = 'just arrived' LIMIT 1;
     IF just_arrived_order_state_id != -1 THEN
     INSERT INTO order_current_state (order_id, order_state_id) VALUES (NEW.id, just_arrived_order_state_id);
     END IF;
