@@ -14,6 +14,3 @@ INSERT INTO order_states (state) VALUES ('canceled'); -- both client or admin ca
 INSERT INTO order_states (state) VALUES ('to be delivered'); -- bro finished cooking
 INSERT INTO order_states (state) VALUES ('finished'); -- the order was either delivered or just ended for any other reason - no need to take care of
 
-INSERT INTO menu_item (title) VALUES ('Torta');
-INSERT INTO menu_item (group_id, parent_id, title) VALUES (1, 1, 'Bizcochuelo');
-INSERT INTO menu_item (group_id, parent_id, title) VALUES (1, 1, 'Chocolate');

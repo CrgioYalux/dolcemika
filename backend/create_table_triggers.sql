@@ -15,17 +15,6 @@ BEGIN
 END;
 //
 
-CREATE TRIGGER set_group_id_to_id_if_null_parent
-BEFORE INSERT ON menu_item
-FOR EACH ROW
-BEGIN
-	IF NEW.parent_id IS NULL THEN
-		SET NEW.group_id = LAST_INSERT_ID() + 1;
-	END IF;
-END;
-//
-
-DELIMITER //
 CREATE TRIGGER register_user_by_role
 AFTER INSERT
 ON user
@@ -44,5 +33,3 @@ END;
 //
 
 DELIMITER ;
-
-

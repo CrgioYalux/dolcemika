@@ -66,7 +66,6 @@ CREATE TABLE user_admin (
 
 CREATE TABLE menu_item (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	group_id INT NOT NULL,
 	parent_id INT DEFAULT NULL,
     is_available BIT(1) NOT NULL,
 	PRIMARY KEY (id),
