@@ -36,17 +36,20 @@ type User = {
 
 type MenuItem = {
     id: number;
+    menu_item_id: number;
     parent_id: number | null;
     is_available: boolean;
     title: string;
-    detail: string;
-    price: number;
+    detail: string | null;
+    price: number | null;
+    image: Buffer | null;
 };
 
 type Order = {
     id: number;
     client_id: number;
     state_id: number;
+    is_finished: boolean;
     total_price: number;
     created_at: Date;
     updated_at: Date;
@@ -78,10 +81,6 @@ type OrderMenu = {
 };
 
 // Transformations
-
-type InternalMenuItemNode = Omit<MenuItem, 'parent_id'> & {
-    parent: InternalMenuItemNode | null;
-};
 
 type MenuItemNode = Omit<MenuItem, 'parent_id'> & {
     children: MenuItemNode[];
