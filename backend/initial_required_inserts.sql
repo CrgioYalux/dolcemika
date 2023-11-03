@@ -13,4 +13,3 @@ INSERT INTO order_states (state) VALUES ('revising'); -- client might have added
 INSERT INTO order_states (state) VALUES ('canceled'); -- both client or admin can cancel - client before 'to be delivered', admin anytime
 INSERT INTO order_states (state) VALUES ('to be delivered'); -- bro finished cooking
 INSERT INTO order_states (state) VALUES ('finished'); -- the order was either delivered or just ended for any other reason - no need to take care of
-

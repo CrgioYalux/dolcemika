@@ -38,3 +38,7 @@ CREATE VIEW MenuItemsDescribed AS
 		mid.image
 	FROM menu_item mi
 	JOIN menu_item_description mid ON mi.id = mid.menu_item_id;
+    
+DROP VIEW LastOrderCurrentStatesView;
+DROP VIEW ClientOrdersAtLastState;
+DROP VIEW MenuItemsDescribed;

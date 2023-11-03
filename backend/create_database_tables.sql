@@ -57,7 +57,7 @@ CREATE TABLE user_client (
 
 CREATE TABLE user_admin (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT,
-	user_id INT NOT NULL,
+	user_id INT NOT NULL,		
 	PRIMARY KEY (id),
 	CONSTRAINT fk__user_admin__user
 	FOREIGN KEY (user_id)
@@ -72,6 +72,7 @@ CREATE TABLE menu_item (
 	CONSTRAINT fk__menu_item__menu_item
 	FOREIGN KEY (parent_id)
 	REFERENCES menu_item (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE menu_item_description (
@@ -83,6 +84,7 @@ CREATE TABLE menu_item_description (
     CONSTRAINT fk__menu_item_description__menu_item
     FOREIGN KEY (menu_item_id)
     REFERENCES menu_item (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE ingredient (
@@ -98,20 +100,29 @@ CREATE TABLE ingredient_stock (
 	CONSTRAINT fk__ingredient_stock__ingredient
 	FOREIGN KEY (ingredient_id)
 	REFERENCES ingredient (id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE client_order (
 	id INT NOT NULL UNIQUE AUTO_INCREMENT, -- use this for allowing the use to retrieve the order's state or to make changes in it
 	client_id INT NOT NULL,
-	total_price FLOAT NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-	estimated_for DATETIME DEFAULT NULL,
-	detail VARCHAR(250) DEFAULT NULL,
+    is_finished BIT(1) NOT NULL DEFAULT 0,
 	PRIMARY KEY (id),
 	CONSTRAINT fk__client_order__user_client
 	FOREIGN KEY (client_id)
 	REFERENCES user_client (id)
+);
+
+CREATE TABLE client_order_description (
+	order_id INT NOT NULL,
+    total_price FLOAT NOT NULL,
+    detail VARCHAR(250) DEFAULT NULL,
+    estimated_for DATETIME DEFAULT NULL,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk__client_order_description__client_order
+    FOREIGN KEY (order_id)
+    REFERENCES client_order (id)
 );
 
 CREATE TABLE order_comment (

@@ -33,3 +33,6 @@ END;
 //
 
 DELIMITER ;
+
+DROP TRIGGER register_order_just_arrived_state;
+DROP TRIGGER register_user_by_role;
