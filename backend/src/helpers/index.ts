@@ -1,15 +1,17 @@
 import jwt from 'jsonwebtoken';
 import environment from '../environment';
 
-type User = {
-    username: string;
-    password: string;
-};
+const expiresIn: string = '1d';
 
-const expiresIn: string = '7d';
+function generateAccessToken(user: ({ role: 'client' } & Pick<User, 'user_id' | 'client_id'>) | { role: 'admin' } & Pick<User, 'user_id' | 'admin_id'>): string {
+    const payloadByRole = (user.role === 'client') ? { role: user.role, client_id: user.client_id } : { role: user.role, admin_id: user.admin_id };
+    const payload = {
+        expiresIn,
+        user_id: user.user_id,
+        ...payloadByRole
+    };
 
-function generateAccessToken(user: User): string {
-    return jwt.sign({ ...user, expiresIn }, environment.SECRET_KEY, { expiresIn });
+    return jwt.sign(payload, environment.SECRET_KEY, { expiresIn });
 };
 
 const generateRandomNumber = (max: number, min: number = 0): number => Math.floor(Math.random() * (max + 1) + min);

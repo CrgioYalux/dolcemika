@@ -3,12 +3,12 @@ import type { PoolConnection } from 'mysql';
 enum MenuOperationQuery {
     AddItem = `
         INSERT INTO 
-            menu_item (group_id, parent_id, title, detail, price)
+            menu_item (parent_id, is_available)
         VALUES
-            (?, ?, ?, ?)
+            (?, TRUE)
     `,
     Get = `
-        SELECT * FROM menu_item AS mi
+        SELECT * FROM MenuItemsDescribed
     `,
 };
 
@@ -16,7 +16,7 @@ interface MenuOperation {
     AddItem: {
         Action: (
             pool: PoolConnection,
-            payload: Pick<MenuItem, 'group_id' | 'parent_id' | 'title' | 'detail' | 'price'>
+            payload: Pick<MenuItem, 'parent_id' | 'title' | 'detail' | 'price'>
         ) => Promise<{ created: true, menu_item: Pick<MenuItem, 'id'> } | { created: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
     };
@@ -43,37 +43,22 @@ const Get: MenuOperation['Get']['Action'] = (pool) => {
                 return;
             }
 
-            const orderedByGroups = orderMenuItemListByGroupId(parsed);
-            const menuTree: Menu = [];
-            
-            for (const group of orderedByGroups) {
-                menuTree.push(fromMenuItemListToMenuTree(group)[0]);
-            }
-            
+            const menuTree = fromMenuItemListToMenuTree(parsed);
+
             resolve({ found: true, menu: menuTree });
         });
     });
 };
 
-const orderMenuItemListByGroupId = (list: MenuItem[]): MenuItem[][] => {
-    const groupsMap = new Map<number, MenuItem[]>();
-
-    list.forEach((item) => {
-        const menuItems = groupsMap.get(item.group_id) ?? [];
-        menuItems.push(item);
-        groupsMap.set(item.group_id, menuItems);
-    });
-
-    return Array.from(groupsMap.values());
-};
-
 function fromMenuItemListToMenuTree(items: MenuItem[]): Menu {
-    const itemMap = new Map<number, MenuItemNode>();
+    const itemsAsNodesMap = new Map<number, MenuItemNode>();
 
     // Create a mapping of items by their IDs
     for (const item of items) {
-        const { group_id, parent_id, ...rest } = item;
-        itemMap.set(item.id, {
+        const { parent_id, is_available, ...rest } = item;
+
+        itemsAsNodesMap.set(item.id, {
+            is_available: is_available ? true : false,
             ...rest,
             children: [],
         });
@@ -82,7 +67,7 @@ function fromMenuItemListToMenuTree(items: MenuItem[]): Menu {
     const tree: Menu = [];
 
     for (const item of items) {
-        const node = itemMap.get(item.id);
+        const node = itemsAsNodesMap.get(item.id);
         if (!node) continue;
 
         if (item.parent_id === null) {
@@ -90,7 +75,7 @@ function fromMenuItemListToMenuTree(items: MenuItem[]): Menu {
             tree.push(node);
         } else {
             // Add the node as a child of its parent
-            const parent = itemMap.get(item.parent_id);
+            const parent = itemsAsNodesMap.get(item.parent_id);
             if (parent) {
                 parent.children.push(node);
             }

@@ -19,8 +19,11 @@ type EffectlessQueryResult<T> = T[];
 
 type User = {
     id: number;
+    user_id: number;
+    admin_id: number | null;
+    client_id: number | null;
     role_id: number;
-    role: string;
+    role: 'admin' | 'client';
     email: string;
     fullname: string;
     created_at: Date;
@@ -33,8 +36,8 @@ type User = {
 
 type MenuItem = {
     id: number;
-    group_id: number;
     parent_id: number | null;
+    is_available: boolean;
     title: string;
     detail: string;
     price: number;
@@ -76,11 +79,11 @@ type OrderMenu = {
 
 // Transformations
 
-type InternalMenuItemNode = Omit<MenuItem, 'parent_id' | 'group_id'> & {
+type InternalMenuItemNode = Omit<MenuItem, 'parent_id'> & {
     parent: InternalMenuItemNode | null;
 };
 
-type MenuItemNode = Omit<MenuItem, 'parent_id' | 'group_id'> & {
+type MenuItemNode = Omit<MenuItem, 'parent_id'> & {
     children: MenuItemNode[];
 };
 

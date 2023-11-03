@@ -6,22 +6,22 @@ import type { Request, Response, NextFunction } from "express";
 const Auth = (request: Request, response: Response, next: NextFunction): void => {
     const authHeader = request.headers.authorization;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.substring(7);
-
-        if (token) {
-            jwt.verify(token, environment.SECRET_KEY, (err, decoded) => {
-                if (err) {
-                    response.status(403).json({ reason: 'Wrong/expired credentials' }).end();
-                } else {
-                    request.body.user = decoded;
-                    next();
-                }
-            });
-        } else {
-            response.status(401).json({ reason: 'No token provided' }).end();
-        }
+    if (!authHeader || (authHeader && (!authHeader.startsWith('Bearer ')) || !authHeader.substring(7).length)) {
+        response.status(400).send({ message: 'No auth token provided' });
+        return;
     }
+
+    const token = authHeader.substring(7);
+
+    jwt.verify(token, environment.SECRET_KEY, (err, decoded) => {
+        if (err) {
+            response.status(401).send({ message: 'Wrong/expired credentials' });
+            return;
+        }
+
+        request.body.user = decoded;
+        next();
+    });
 };
 
 const ErrorHandling = (error: Error, request: Request, response: Response, next: NextFunction): void => {

@@ -34,7 +34,14 @@ enum UserOperationQuery {
     `,
     PublicFindById = `
         SELECT
-            u.id, ur.role, u.email, ud.fullname, ud.birthdate, ud.cellphone
+            u.id AS user_id,
+            uc.id AS client_id,
+            ua.id AS admin_id,
+            ur.role,
+            u.email,
+            ud.fullname,
+            ud.birthdate,
+            ud.cellphone
         FROM 
             user AS u
         JOIN
@@ -44,9 +51,18 @@ enum UserOperationQuery {
         JOIN
             user_roles AS ur
         ON 
-            u.role_id = ur.id
+            ur.id = u.role_id
+        LEFT JOIN
+            user_client AS uc
+        ON
+            u.id = uc.user_id
+        LEFT JOIN
+            user_admin AS ua
+        ON
+            u.id = ua.user_id
         WHERE
-            u.id = ?
+                u.id = ?
+        LIMIT 1
     `,
     InternalFindByEmail = `
         SELECT 
@@ -55,6 +71,7 @@ enum UserOperationQuery {
             user AS u
         WHERE 
             u.email = ?
+        LIMIT 1
     `,
     Auth = `
         SELECT 
@@ -67,6 +84,7 @@ enum UserOperationQuery {
             u.id = ua.user_id 
         WHERE
             u.id = ?
+        LIMIT 1
     `,
 };
 
@@ -109,8 +127,8 @@ interface UserOperation {
         Action: (
             pool: PoolConnection,
             payload: Pick<User, 'id'>
-        ) => Promise<{ found: true, user: Pick<User,'id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'> } | { found: false, message: string }>;
-        QueryReturnType: EffectlessQueryResult<Pick<User,'id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'>>;
+        ) => Promise<{ found: true, user: Pick<User,'user_id' | 'client_id' | 'admin_id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'> } | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<User,'user_id' | 'client_id' | 'admin_id' | 'role' | 'email' | 'fullname' | 'birthdate' | 'cellphone'>>;
     };
     InternalFindByEmail: {
         Action: (

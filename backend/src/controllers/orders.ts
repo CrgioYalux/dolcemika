@@ -1,8 +1,5 @@
 import type { PoolConnection } from 'mysql';
 
-// TODO 
-// - change state
-
 enum OrderOperationQuery {
     Create = `
         INSERT INTO
@@ -29,6 +26,18 @@ enum OrderOperationQuery {
             order_current_state (order_id, order_state_id)
         VALUES 
             (?, ?)
+    `,
+    GetClientOrdersById = `
+        SELECT
+            co.id AS order_id,
+            co.total_price,
+            co.created_at,
+            co.estimated_for,
+            co.detail
+        FROM client_order co
+        JOIN user_client uc ON uc.id = co.client_id
+        JOIN user u ON u.id = uc.user_id
+        WHERE u.id = ?
     `,
 };
 
