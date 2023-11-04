@@ -7,5 +7,6 @@ const router = express.Router();
 
 router.post(ROUTES.USERS.POST_CLIENT, Handlers.Users.PostClient);
 router.post(ROUTES.USERS.AUTH, Handlers.Users.Auth);
+router.post(ROUTES.MENU.GET, Handlers.Menu.Get);
 
 export default router;

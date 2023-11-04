@@ -80,6 +80,15 @@ type OrderMenu = {
     body: string;
 };
 
+type Ingredient = {
+    ingredient_id: number;
+    title: string;
+    detail: string | null;
+    stock: number;
+};
+
+type Inventory = Ingredient[];
+
 // Transformations
 
 type MenuItemNode = Omit<MenuItem, 'parent_id'> & {

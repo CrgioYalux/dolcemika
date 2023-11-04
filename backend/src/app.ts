@@ -25,11 +25,12 @@ function create(): Express {
 
     app.use(API.Router.Unauth);
 
-    // app.use(Middlewares.Auth);
+    app.use(Middlewares.Auth);
 
     app.use(API.Router.Users);
     app.use(API.Router.Menu);
     app.use(API.Router.Orders);
+    app.use(API.Router.Inventory);
     
     app.use(Middlewares.ErrorHandling);
     app.use(Middlewares.NotFound);

@@ -21,10 +21,19 @@ const ORDERS = {
     GET_STATE_HISTORY: /^\/api\/orders\/(\d+)\/states\/?$/,
 };
 
+const INVENTORY = {
+    GET: /^\/api\/inventory\/?$/,
+    POST_INGREDIENT: /^\/api\/inventory\/?$/,
+    PUT_INGREDIENT_STOCK: /^\/api\/inventory\/(\d+)\/?$/,
+    PUT_INGREDIENT_DESCRIPTION: /^\/api\/inventory\/(\d+)\/?$/,
+    DELETE_INGREDIENT: /^\/api\/inventory\/(\d+)\/?$/,
+};
+
 const ROUTES = { 
     USERS,
     MENU,
     ORDERS,
+    INVENTORY,
 };
 
 export { ROUTES };
