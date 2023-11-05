@@ -1,28 +1,39 @@
-CREATE VIEW LastOrderCurrentStatesView AS
+CREATE VIEW OrderCurrentStateInMaxCreatedAtView AS
 	SELECT
-			ocs.order_id,
-			ocs.created_at AS last_created_at,
-			ocs.order_state_id
-		FROM order_current_state ocs
-		JOIN (
-			SELECT
-				order_id,
-				MAX(created_at) AS max_created_at
-			FROM order_current_state
-			GROUP BY order_id
-		) max_created
-		ON ocs.order_id = max_created.order_id AND ocs.created_at = max_created.max_created_at;
+		ocs.order_id,
+        MAX(ocs.created_at) AS max_created_at
+	FROM order_current_state ocs
+    GROUP BY ocs.order_id;
+
+CREATE VIEW OrdersInLastStateView AS
+	SELECT
+		ocs.order_id,
+		ocs.created_at AS last_state_at,
+        os.state
+	FROM order_current_state ocs
+	JOIN OrderCurrentStateInMaxCreatedAtView max
+	ON ocs.order_id = max.order_id AND ocs.created_at = max.max_created_at
+	JOIN order_states os
+	ON ocs.order_state_id = os.id;
+
+CREATE VIEW OrdersDescribedInLastStateView AS
+	SELECT
+		co.client_id,
+        oilsv.*
+	FROM client_order co
+    JOIN OrdersInLastStateView oilsv
+    ON co.id = oilsv.order_id;
 
 CREATE VIEW ClientOrdersAtLastState AS
 SELECT
-	co.id as order_id, co.total_price, co.created_at, co.updated_at, co.estimated_for, co.detail,
-    locsv.last_created_at AS last_state_change_at,
-	os.state,
+	cod.*,
+    locsv.last_state_at,
+	locsv.state,
     u.email,
     ud.fullname, ud.cellphone
 FROM client_order co
-JOIN LastOrderCurrentStatesView locsv ON locsv.order_id = co.id
-JOIN order_states os ON os.id = locsv.order_state_id
+JOIN client_order_description cod ON co.id = cod.order_id
+JOIN OrdersInLastStateView locsv ON locsv.order_id = co.id
 JOIN user_client uc ON uc.id = co.client_id
 JOIN user u ON u.id = uc.user_id
 JOIN user_description ud ON u.id = ud.user_id;
@@ -39,6 +50,8 @@ CREATE VIEW MenuItemsDescribed AS
 	FROM menu_item mi
 	JOIN menu_item_description mid ON mi.id = mid.menu_item_id;
     
-DROP VIEW LastOrderCurrentStatesView;
+DROP VIEW OrderCurrentStateInMaxCreatedAtView;
+DROP VIEW OrdersInLastStateView;
+DROP VIEW OrderDescribedInLastStateView;
 DROP VIEW ClientOrdersAtLastState;
 DROP VIEW MenuItemsDescribed;
