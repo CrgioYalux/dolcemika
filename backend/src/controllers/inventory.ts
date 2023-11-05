@@ -6,21 +6,21 @@ enum InventoryOperationQuery {
             i.id AS ingredient_id,
             i.title,
             i.detail,
-            is.stock
+            ist.stock
         FROM 
             ingredient i
         JOIN 
-            ingredient_stock is
+            ingredient_stock ist
         ON
-            i.id = is.ingredient_id
+            i.id = ist.ingredient_id
     `,
     ChangeIngredientStock = `
         UPDATE 
-            ingredient_stock is
+            ingredient_stock ist
         SET
-            is.stock = ?
+            ist.stock = ?
         WHERE
-            is.ingredient_id = ?
+            ist.ingredient_id = ?
     `,
     ChangeIngredientDescription = `
         UPDATE

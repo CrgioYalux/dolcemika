@@ -47,6 +47,7 @@ type MenuItem = {
 
 type Order = {
     id: number;
+    order_id: number;
     client_id: number;
     state_id: number;
     is_finished: boolean;

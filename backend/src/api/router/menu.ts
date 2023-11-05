@@ -10,6 +10,5 @@ router.post(ROUTES.MENU.POST_ITEM, Handlers.Menu.PostMenuItem);
 router.put(ROUTES.MENU.PUT_ITEM_AVAILABILITY, Handlers.Menu.PutMenuItemAvailability);
 router.put(ROUTES.MENU.PUT_ITEM_DESCRIPTION, Handlers.Menu.PutMenuItemDescription);
 router.delete(ROUTES.MENU.DELETE_ITEM, Handlers.Menu.DeleteMenuItem);
-router.get(ROUTES.MENU.GET, Handlers.Menu.Get);
 
 export default router;
