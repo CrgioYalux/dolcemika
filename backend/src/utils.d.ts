@@ -49,6 +49,7 @@ type User = {
     password: string;
     hash: string;
     salt: string;
+    amount_orders: number;
 };
 
 type MenuItem = {

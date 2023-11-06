@@ -66,6 +66,9 @@ enum OrderOperationQuery {
         FROM OrdersInLastStateView oilsv
         WHERE oilsv.order_id = ?
     `,
+    GetAmountByClients = `
+        SELECT * FROM ClientsOrdersAmount
+    `,
 };
 
 interface OrderOperation {
@@ -178,6 +181,12 @@ interface OrderOperation {
             payload: Pick<Order, 'order_id'>
         ) => Promise<{ done: true } | { done: false, message: string }>
         QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    GetAmountByClients: {
+        Action: (
+            pool: PoolConnection
+        ) => Promise<{ found: true, clients: Array<Pick<User, 'user_id' | 'client_id' | 'fullname' | 'email' | 'birthdate' | 'cellphone' | 'amount_orders'>> } | { found: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<User, 'user_id' | 'client_id' | 'fullname' | 'email' | 'birthdate' | 'cellphone' | 'amount_orders'>>;
     };
 };
 
@@ -739,6 +748,26 @@ const GetStateHistory: OrderOperation['GetStateHistory']['Action'] = (pool, payl
     });
 };
 
+const GetAmountByClients: OrderOperation['GetAmountByClients']['Action'] = (pool) => {
+    return new Promise((resolve, reject) => {
+        pool.query(OrderOperationQuery.GetAmountByClients, (err, results) => {
+            if (err) {
+                reject({ getClientsOrdersAmountError: err });
+                return;
+            }
+
+            const parsed = results as OrderOperation['GetAmountByClients']['QueryReturnType'];
+
+            if (!parsed.length) {
+                resolve({ found: false, message: 'Could not found clients and the amount of orders created' });
+                return;
+            }
+
+            resolve({ found: true, clients: parsed });
+        });
+    });
+};
+
 const Orders = {
     Create,
     GetStates,
@@ -751,6 +780,7 @@ const Orders = {
     ChangeToCanceledState,
     ChangeToFinishedState,
     GetStateHistory,
+    GetAmountByClients,
 };
 
 export default Orders;

@@ -10,6 +10,7 @@ router.get(ROUTES.ORDERS.GET, Handlers.Orders.Get);
 router.get(ROUTES.ORDERS.GET_BY_ID, Handlers.Orders.GetById);
 router.get(ROUTES.ORDERS.GET_STATES, Handlers.Orders.GetStates);
 router.get(ROUTES.ORDERS.GET_STATE_HISTORY, Handlers.Orders.GetStateHistory);
+router.get(ROUTES.ORDERS.GET_AMOUNT_BY_CLIENTS, Handlers.Orders.GetAmountByClients);
 router.post(ROUTES.ORDERS.POST_CUSTOM_STATE, Handlers.Orders.PostCustomState);
 router.post(ROUTES.ORDERS.POST_PAUSED_STATE, Handlers.Orders.PostPausedState);
 router.post(ROUTES.ORDERS.POST_REVISING_STATE, Handlers.Orders.PostRevisingState);

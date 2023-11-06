@@ -19,6 +19,7 @@ const ORDERS = {
     POST: /^\/api\/orders\/?$/,
     GET_STATES: /^\/api\/orders\/states\/?$/,
     GET_STATE_HISTORY: /^\/api\/orders\/(\d+)\/states\/?$/,
+    GET_AMOUNT_BY_CLIENTS: /^\/api\/orders\/clients\/?$/,
     POST_CUSTOM_STATE: /^\/api\/orders\/(\d+)\/states\/(\d+)\/?$/,
     POST_NEXT_STATE: /^\/api\/orders\/(\d+)\/states\/next\/?$/,
     POST_PAUSED_STATE: /^\/api\/orders\/(\d+)\/states\/paused\/?$/,

@@ -309,6 +309,27 @@ const GetStateHistory = (request: Request, response: Response, next: NextFunctio
     });
 };
 
+const GetAmountByClients = (request: Request, response: Response, next: NextFunction): void => {
+    db.pool.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.GetAmountByClients(connection)
+        .then((res) => {
+            connection.release();
+            const status = res.found ? 302 : 404;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
 const Orders = {
     Post,
     Get,
@@ -321,6 +342,7 @@ const Orders = {
     PostCanceledState,
     PostFinishedState,
     PostNextState,
+    GetAmountByClients,
 };
 
 export default Orders;

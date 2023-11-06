@@ -51,8 +51,27 @@ CREATE VIEW MenuItemsDescribed AS
 	FROM menu_item mi
 	JOIN menu_item_description mid ON mi.id = mid.menu_item_id;
     
+CREATE VIEW ClientsOrdersAmount AS
+	SELECT
+		ud.fullname,
+		ud.cellphone,
+		ud.birthdate,
+		u.email,
+		ao.*
+	FROM 
+		user AS u
+	JOIN
+		(select uc.id as client_id, uc.user_id, count(co.id) amount_orders from client_order co join user_client uc on uc.id = co.client_id group by uc.id) AS ao
+	ON
+		u.id = ao.user_id
+	JOIN
+		user_description AS ud
+	ON
+		u.id = ud.user_id;
+    
 DROP VIEW OrderCurrentStateInMaxCreatedAtView;
 DROP VIEW OrdersInLastStateView;
 DROP VIEW OrderDescribedInLastStateView;
 DROP VIEW ClientOrdersAtLastState;
 DROP VIEW MenuItemsDescribed;
+DROP VIEW ClientsOrdersAmount;
