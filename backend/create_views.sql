@@ -9,6 +9,7 @@ CREATE VIEW OrdersInLastStateView AS
 	SELECT
 		ocs.order_id,
 		ocs.created_at AS last_state_at,
+        ocs.order_state_id AS state_id,
         os.state
 	FROM order_current_state ocs
 	JOIN OrderCurrentStateInMaxCreatedAtView max

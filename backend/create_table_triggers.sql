@@ -2,6 +2,21 @@ USE `dolcemika`;
 
 DELIMITER //
 
+CREATE TRIGGER register_order_as_finished_on_last_state_change
+AFTER INSERT
+ON order_current_state
+FOR EACH ROW
+BEGIN
+	DECLARE state VARCHAR(50) DEFAULT NULL;
+    SELECT os.state INTO state FROM order_states os WHERE os.id = NEW.order_state_id LIMIT 1;
+    IF state = 'finished' OR state = 'canceled' THEN
+		UPDATE client_order co
+        SET co.is_finished = 1
+        WHERE co.id = NEW.order_id;    
+    END IF;
+END;
+//
+
 CREATE TRIGGER register_order_just_arrived_state
 AFTER INSERT
 ON client_order
