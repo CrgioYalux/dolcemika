@@ -16,9 +16,14 @@ const ORDERS = {
     GET: /^\/api\/orders\/?$/,
     GET_BY_ID: /^\/api\/orders\/(\d+)\/?$/,
     POST: /^\/api\/orders\/?$/,
-    POST_STATE: /^\/api\/orders\/(\d+)\/states\/(\d+)\/?$/,
     GET_STATES: /^\/api\/orders\/states\/?$/,
     GET_STATE_HISTORY: /^\/api\/orders\/(\d+)\/states\/?$/,
+    POST_CUSTOM_STATE: /^\/api\/orders\/(\d+)\/states\/(\d+)\/?$/,
+    POST_NEXT_STATE: /^\/api\/orders\/(\d+)\/states\/next\/?$/,
+    POST_PAUSED_STATE: /^\/api\/orders\/(\d+)\/states\/paused\/?$/,
+    POST_REVISING_STATE: /^\/api\/orders\/(\d+)\/states\/revising\/?$/,
+    POST_CANCELED_STATE: /^\/api\/orders\/(\d+)\/states\/canceled\/?$/,
+    POST_FINISHED_STATE: /^\/api\/orders\/(\d+)\/states\/finished\/?$/,
 };
 
 const INVENTORY = {

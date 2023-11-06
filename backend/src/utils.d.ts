@@ -45,6 +45,8 @@ type MenuItem = {
     image: Buffer | null;
 };
 
+type OrderPossibleState = 'just arrived' | 'accepted' | 'started' | 'paused' | 'revising' | 'canceled' | 'to be delivered' | 'finished';
+
 type Order = {
     id: number;
     order_id: number;
@@ -54,9 +56,10 @@ type Order = {
     total_price: number;
     created_at: Date;
     updated_at: Date;
+    last_state_at: date;
     estimated_for: Date;
     detail: string;
-    state: string;
+    state: OrderPossibleState;
 };
 
 type ClientOrderAtLastState = {
@@ -67,7 +70,7 @@ type ClientOrderAtLastState = {
     estimated_for: Date;
     detail: string;
     last_state_change_at: Date;
-    state: string;
+    state: OrderPossibleState;
     email: string;
     fullname: string;
     cellphone: string;

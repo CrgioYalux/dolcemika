@@ -105,7 +105,7 @@ const GetStates = (request: Request, response: Response, next: NextFunction): vo
     });
 };
 
-const PostState = (request: Request, response: Response, next: NextFunction): void => {
+const PostCustomState = (request: Request, response: Response, next: NextFunction): void => {
     const order_id = request.params[0];
     const state_id = request.params[1];
 
@@ -135,12 +135,192 @@ const PostState = (request: Request, response: Response, next: NextFunction): vo
     });
 };
 
+const PostPausedState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeToPausedState(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const PostRevisingState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeToRevisingState(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const PostCanceledState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeToCanceledState(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const PostFinishedState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeToFinishedState(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const PostNextState = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.ChangeToNextState(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.done ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+const GetStateHistory = (request: Request, response: Response, next: NextFunction): void => {
+    const order_id = request.params[0];
+
+    if (order_id === undefined) {
+        response.status(400).send({ message: 'No order ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) { 
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.GetStateHistory(connection, { order_id: Number(order_id) })
+        .then((res) => {
+            connection.release();
+
+            const status = res.found ? 302 : 404;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
 const Orders = {
     Post,
     Get,
     GetById,
     GetStates,
-    PostState,
+    GetStateHistory,
+    PostCustomState,
+    PostPausedState,
+    PostRevisingState,
+    PostCanceledState,
+    PostFinishedState,
+    PostNextState,
 };
 
 export default Orders;

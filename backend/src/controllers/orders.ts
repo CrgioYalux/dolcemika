@@ -18,7 +18,10 @@ enum OrderOperationQuery {
             ?
     `,
     GetStates = `
-        SELECT state FROM order_states
+        SELECT os.id as state_id, os.state FROM order_states os
+    `,
+    GetStateByName = `
+        SELECT * FROM order_states os WHERE os.state = ?
     `,
     Get = `
         SELECT * FROM OrdersDescribedInLastStateView
@@ -46,6 +49,22 @@ enum OrderOperationQuery {
         JOIN user_client uc ON uc.id = co.client_id
         JOIN user u ON u.id = uc.user_id
         WHERE u.id = ?
+    `,
+    GetStateHistory = `
+        SELECT
+            ocs.created_at,
+            os.state,
+            os.id as state_id
+        FROM order_current_state ocs
+        JOIN order_states os
+        ON os.id = ocs.order_state_id
+        WHERE ocs.order_id = ?
+    `,
+    GetOrderLastState = `
+        SELECT
+            *
+        FROM OrdersInLastStateView oilsv
+        WHERE oilsv.order_id = ?
     `,
 };
 
@@ -78,8 +97,8 @@ interface OrderOperation {
     GetStates: {
         Action: (
             pool: PoolConnection
-        ) => Promise<{ found: true, states: Pick<Order, 'state'>[] } | { found: false, message: string }>;
-        QueryReturnType: EffectlessQueryResult<Pick<Order, 'state'>>;
+        ) => Promise<{ found: true, states: Pick<Order, 'state_id' | 'state'>[] } | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'state_id' | 'state'>>;
     };
     Get: {
         Action: (
@@ -114,6 +133,51 @@ interface OrderOperation {
             payload: Pick<Order, 'order_id' | 'state_id'>
         ) => Promise<{ done: true } | { done: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
+    };
+    GetStateHistory: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ found: true, states: Array<Pick<Order, 'created_at' | 'state_id' | 'state'>> } | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'created_at' | 'state_id' | 'state'>>;
+    };
+    GetLastState: {
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    ChangeToNextState: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ done: true } | { done: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    ChangeToPausedState: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ done: true } | { done: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    ChangeToRevisingState: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ done: true } | { done: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    ChangeToCanceledState: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ done: true } | { done: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
+    };
+    ChangeToFinishedState: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'order_id'>
+        ) => Promise<{ done: true } | { done: false, message: string }>
+        QueryReturnType: EffectlessQueryResult<Pick<Order, 'order_id' | 'last_state_at' | 'state_id' | 'state'>>;
     };
 };
 
@@ -308,12 +372,385 @@ const ChangeState: OrderOperation['ChangeState']['Action'] = (pool, payload) => 
     });
 };
 
+const ChangeToNextState: OrderOperation['ChangeToNextState']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((err0) => {
+            if (err0) {
+                reject({ changeToNextStateBeginTransactionError: err0 });
+                return;
+            }
+
+            pool.query(OrderOperationQuery.GetOrderLastState, [payload.order_id], (err1, results1) => {
+                if (err1) {
+                    pool.rollback(() => {
+                        reject({ getOrderStatesError: err1 });
+                    });
+                    return;
+                }
+
+                const parsed1 = results1 as OrderOperation['GetLastState']['QueryReturnType'];
+
+                if (!parsed1.length) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find the next logical state' });
+                    });
+                    return;
+                }
+
+                pool.query(OrderOperationQuery.GetStates, (err2, results2) => {
+                    if (err2) {
+                        pool.rollback(() => {
+                            reject({ getStatesError: err2 });
+                        });
+                        return;
+                    }
+
+                    const parsed2 = results2 as OrderOperation['GetStates']['QueryReturnType'];
+
+                    if (!parsed2.length) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not find all of order possible states' });
+                        });
+                        return;
+                    }
+
+                    const lastState = parsed1[0];
+                    let stateToFind: OrderPossibleState | '' = '';
+
+                    if (lastState.state === 'just arrived') {
+                        stateToFind = 'accepted';
+                    } else if (lastState.state === 'accepted' || lastState.state === 'paused') {
+                        stateToFind = 'started';
+                    } else if (lastState.state === 'started') {
+                        stateToFind = 'to be delivered';
+                    } else if (lastState.state === 'to be delivered') {
+                        stateToFind = 'finished';
+                    }
+
+                    const nextState = parsed2.find((v) => v.state === stateToFind);
+
+                    if (!nextState) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not find the next logical state' });
+                        });
+                        return;
+                    }
+
+                    ChangeState(pool, { order_id: payload.order_id, state_id: nextState.state_id })
+                    .then((res) => {
+                        if (!res.done) {
+                            pool.rollback(() => {
+                                resolve({ done: false, message: 'Could not change the state' });
+                            });
+                            return;
+                        }
+
+                        pool.commit((err4) => {
+                            if (err4) {
+                                pool.rollback(() => {
+                                    reject({ changeToNextStateCommitTransactionError: err4 });
+                                });
+                                return;
+                            }
+
+                            resolve({ done: true });
+                        });
+                    })
+                    .catch((err3) => {
+                        pool.rollback(() => {
+                            reject(err3);
+                        });
+                    });
+                });
+            });
+        });
+    });
+};
+
+const ChangeToPausedState: OrderOperation['ChangeToPausedState']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((err0) => {
+            if (err0) {
+                reject({ changeToPausedStateError: err0 });
+                return;
+            }
+
+            pool.query(OrderOperationQuery.GetStates, (err1, results1) => {
+                if (err1) {
+                    pool.rollback(() => {
+                        reject({ getStatesError: err1 });
+                    });
+                    return;
+                }
+
+                const parsed1 = results1 as OrderOperation['ChangeToPausedState']['QueryReturnType'];
+
+                if (!parsed1.length) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find all of order possible states' });
+                    });
+                    return;
+                }
+
+                const pausedState = parsed1.find((v) => v.state === 'paused');
+
+                if (!pausedState) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find the paused state' });
+                    });
+                    return;
+                }
+
+                ChangeState(pool, { order_id: payload.order_id, state_id: pausedState.state_id })
+                .then((res) => {
+                    if (!res.done) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not change the state' });
+                        });
+                        return;
+                    }
+
+                    pool.commit((err2) => {
+                        if (err2) {
+                            reject({ changeToPausedStateError: err2 });
+                            return;
+                        }
+
+                        resolve({ done: true });
+                    });
+                })
+                .catch((err2) => {
+                    pool.rollback(() => {
+                        reject({ changeStateError: err2 });
+                    });
+                    return;
+                });
+            });
+        });
+    });
+};
+
+const ChangeToRevisingState: OrderOperation['ChangeToRevisingState']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((err0) => {
+            if (err0) {
+                reject({ changeToRevisingStateError: err0 });
+                return;
+            }
+
+            pool.query(OrderOperationQuery.GetStates, (err1, results1) => {
+                if (err1) {
+                    pool.rollback(() => {
+                        reject({ getStatesError: err1 });
+                    });
+                    return;
+                }
+
+                const parsed1 = results1 as OrderOperation['ChangeToRevisingState']['QueryReturnType'];
+
+                if (!parsed1.length) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find all of order possible states' });
+                    });
+                    return;
+                }
+
+                const revisingState = parsed1.find((v) => v.state === 'revising');
+
+                if (!revisingState) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find the revising state' });
+                    });
+                    return;
+                }
+
+                ChangeState(pool, { order_id: payload.order_id, state_id: revisingState.state_id })
+                .then((res) => {
+                    if (!res.done) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not change the state' });
+                        });
+                        return;
+                    }
+
+                    pool.commit((err2) => {
+                        if (err2) {
+                            reject({ changeToRevisingStateError: err2 });
+                            return;
+                        }
+
+                        resolve({ done: true });
+                    });
+                })
+                .catch((err2) => {
+                    pool.rollback(() => {
+                        reject({ changeStateError: err2 });
+                    });
+                    return;
+                });
+            });
+        });
+    });
+};
+
+const ChangeToCanceledState: OrderOperation['ChangeToCanceledState']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((err0) => {
+            if (err0) {
+                reject({ changeToCanceledStateError: err0 });
+                return;
+            }
+
+            pool.query(OrderOperationQuery.GetStates, (err1, results1) => {
+                if (err1) {
+                    pool.rollback(() => {
+                        reject({ getStatesError: err1 });
+                    });
+                    return;
+                }
+
+                const parsed1 = results1 as OrderOperation['ChangeToCanceledState']['QueryReturnType'];
+
+                if (!parsed1.length) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find all of order possible states' });
+                    });
+                    return;
+                }
+
+                const canceledState = parsed1.find((v) => v.state === 'canceled');
+
+                if (!canceledState) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find the canceled state' });
+                    });
+                    return;
+                }
+
+                ChangeState(pool, { order_id: payload.order_id, state_id: canceledState.state_id })
+                .then((res) => {
+                    if (!res.done) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not change the state' });
+                        });
+                        return;
+                    }
+
+                    pool.commit((err2) => {
+                        if (err2) {
+                            reject({ changeToCanceledStateError: err2 });
+                            return;
+                        }
+
+                        resolve({ done: true });
+                    });
+                })
+                .catch((err2) => {
+                    pool.rollback(() => {
+                        reject({ changeStateError: err2 });
+                    });
+                    return;
+                });
+            });
+        });
+    });
+};
+
+const ChangeToFinishedState: OrderOperation['ChangeToFinishedState']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((err0) => {
+            if (err0) {
+                reject({ changeToFinishedStateError: err0 });
+                return;
+            }
+
+            pool.query(OrderOperationQuery.GetStates, (err1, results1) => {
+                if (err1) {
+                    pool.rollback(() => {
+                        reject({ getStatesError: err1 });
+                    });
+                    return;
+                }
+
+                const parsed1 = results1 as OrderOperation['ChangeToFinishedState']['QueryReturnType'];
+
+                if (!parsed1.length) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find all of order possible states' });
+                    });
+                    return;
+                }
+
+                const finishedState = parsed1.find((v) => v.state === 'finished');
+
+                if (!finishedState) {
+                    pool.rollback(() => {
+                        resolve({ done: false, message: 'Could not find the finished state' });
+                    });
+                    return;
+                }
+
+                ChangeState(pool, { order_id: payload.order_id, state_id: finishedState.state_id })
+                .then((res) => {
+                    if (!res.done) {
+                        pool.rollback(() => {
+                            resolve({ done: false, message: 'Could not change the state' });
+                        });
+                        return;
+                    }
+
+                    pool.commit((err2) => {
+                        if (err2) {
+                            reject({ changeToFinishedStateError: err2 });
+                            return;
+                        }
+
+                        resolve({ done: true });
+                    });
+                })
+                .catch((err2) => {
+                    pool.rollback(() => {
+                        reject({ changeStateError: err2 });
+                    });
+                    return;
+                });
+            });
+        });
+    });
+};
+
+const GetStateHistory: OrderOperation['GetStateHistory']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.query(OrderOperationQuery.GetStateHistory, [payload.order_id], (err, results) => {
+            if (err) {
+                reject({ getOrderStatesError: err });
+                return;
+            }
+
+            const parsed = results as OrderOperation['GetStateHistory']['QueryReturnType'];
+
+            if (!parsed.length) {
+                resolve({ found: false, message: 'Could not find the order states' });
+                return;
+            }
+
+            resolve({ found: true, states: parsed });
+        });
+    });
+};
+
 const Orders = {
     Create,
     GetStates,
     Get,
     GetById,
     ChangeState,
+    ChangeToNextState,
+    ChangeToPausedState,
+    ChangeToRevisingState,
+    ChangeToCanceledState,
+    ChangeToFinishedState,
+    GetStateHistory,
 };
 
 export default Orders;
