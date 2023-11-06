@@ -14,6 +14,15 @@ enum UserOperationQuery {
             ur.role = 'client'
         LIMIT 1
     `,
+    InternalFindAdminRoleId = `
+        SELECT
+            ur.id as role_id
+        FROM
+            user_roles AS ur
+        WHERE
+            ur.role = 'admin'
+        LIMIT 1
+    `,
     CreateUser = `
         INSERT INTO 
             user (role_id, email)
@@ -95,6 +104,12 @@ interface UserOperation {
         ) => Promise<{ found: true } & Pick<User, 'role_id'> | { found: false, message: string }>;
         QueryReturnType: EffectlessQueryResult<Pick<User, 'role_id'>>;
     };
+    InternalFindAdminRoleId: {
+        Action: (
+            pool: PoolConnection
+        ) => Promise<{ found: true } & Pick<User, 'role_id'> | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<Pick<User, 'role_id'>>;
+    };
     CreateUser: {
         Action: (
             pool: PoolConnection,
@@ -117,6 +132,13 @@ interface UserOperation {
         QueryReturnType: EffectfulQueryResult;
     };
     CreateClient: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<User, 'email' | 'password' | 'fullname' | 'cellphone' | 'birthdate'>
+        ) => Promise<{ created: true, user: Pick<User, 'id'> } | { created: false, message: string }>;
+        QueryReturnType: EffectfulQueryResult;
+    };
+    CreateAdmin: {
         Action: (
             pool: PoolConnection,
             payload: Pick<User, 'email' | 'password' | 'fullname' | 'cellphone' | 'birthdate'>
@@ -164,6 +186,28 @@ const InternalFindClientRoleId: UserOperation['InternalFindClientRoleId']['Actio
 
             if (!parsed.length) {
                 resolve({ found: false, message: 'Could not find client role id' });
+                return;
+            }
+
+            const role_id = parsed[0].role_id;
+
+            resolve({ found: true, role_id });
+        });
+    });
+};
+
+const InternalFindAdminRoleId: UserOperation['InternalFindAdminRoleId']['Action'] = (pool) => {
+    return new Promise((resolve, reject) => {
+        pool.query(UserOperationQuery.InternalFindAdminRoleId, (err, results) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            const parsed = results as UserOperation['InternalFindAdminRoleId']['QueryReturnType'];
+
+            if (!parsed.length) {
+                resolve({ found: false, message: 'Could not find admin role id' });
                 return;
             }
 
@@ -339,6 +383,102 @@ const CreateClient: UserOperation['CreateClient']['Action'] = (pool, payload) =>
     });
 };
 
+const CreateAdmin: UserOperation['CreateAdmin']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.beginTransaction((errBegin) => {
+            if (errBegin) {
+                reject({ createAdminBeginTransactionError: errBegin });
+                return;
+            }
+
+            InternalFindByEmail(pool, { email: payload.email })
+            .then((res0) => {
+                if (res0.found) {
+                    pool.rollback(() => {
+                        resolve({ created: false, message: 'There\'s already an account with that email' });
+                    });
+                    return;
+                }
+
+                InternalFindAdminRoleId(pool)
+                .then((res1) => {
+                    if (!res1.found) {
+                        pool.rollback(() => {
+                            resolve({ created: false, message: res1.message });
+                        });
+                        return;
+                    }
+
+                    CreateUser(pool, { role_id: res1.role_id, email: payload.email })
+                    .then((res2) => {
+                        if (!res2.created) {
+                            pool.rollback(() => {
+                                resolve({ created: false, message: res2.message });
+                            });
+                            return;
+                        }
+
+                        AddDescription(pool, { id: res2.user.id, fullname: payload.fullname, cellphone: payload.cellphone, birthdate: payload.birthdate })
+                        .then((res3) => {
+                            if (!res3.done) {
+                                pool.rollback(() => {
+                                    resolve({ created: false, message: res3.message });
+                                });
+                                return;
+                            }
+
+                            AddAuth(pool, { id: res2.user.id, password: payload.password })
+                            .then((res4) => {
+                                if (!res4.done) {
+                                    pool.rollback(() => {
+                                        resolve({ created: false, message: res4.message });
+                                    });
+                                    return;
+                                }
+                                
+                                pool.commit((errCommit) => {
+                                    if (errCommit) {
+                                        pool.rollback(() => {
+                                            reject({ createAdminCommitTransactionError: errCommit });
+                                        });
+                                    }
+
+                                    resolve({ created: true, user: { id: res2.user.id} });
+                                });
+                            })
+                            .catch((err) => {
+                                pool.rollback(() => {
+                                    reject({ addAuthError: err });
+                                });
+                            });
+                        })
+                        .catch((err) => {
+                            pool.rollback(() => {
+                                reject({ addDescriptionError: err });
+                            });
+                        });
+                    })
+                    .catch((err) => {
+                        pool.rollback(() => {
+                            reject({ createUserError: err });
+                        });
+                    });
+                })
+                .catch((err) => {
+                    pool.rollback(() => {
+                        reject({ findAdminRoleIdError: err });
+                    });
+                });
+            })
+            .catch((err) => {
+                pool.rollback(() => {
+                    reject({ findByEmailError: err });
+                });
+            });
+        });
+    });
+};
+
 const InternalFindByEmail: UserOperation['InternalFindByEmail']['Action'] = (pool, payload) => {
     return new Promise((resolve, reject) => {
         pool.query(UserOperationQuery.InternalFindByEmail, [payload.email], (err, results) => {
@@ -436,6 +576,7 @@ const Auth: UserOperation['Auth']['Action'] = (pool, payload) => {
 
 const Users = {
     CreateClient,
+    CreateAdmin,
     Auth,
     PublicFindById,
 };

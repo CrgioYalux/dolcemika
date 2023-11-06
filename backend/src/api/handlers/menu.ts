@@ -4,6 +4,14 @@ import db from '../../db';
 import type { NextFunction, Request, Response } from 'express';
 
 const Get = (request: Request, response: Response, next: NextFunction): void => {
+    const authHeader = request.headers.authorization;
+    const session = response.locals.session as Session;
+
+    if (authHeader !== undefined && session === undefined) {
+        next();
+        return;
+    }
+
     db.pool.getConnection((err, connection) => {
         if (err) {
             connection.release();
@@ -14,7 +22,9 @@ const Get = (request: Request, response: Response, next: NextFunction): void => 
             return;
         }
 
-        Controllers.Menu.Get(connection)
+        const asRole = !authHeader || session?.role === 'client' ? 'client' : 'admin'
+
+        Controllers.Menu.Get(connection, { asRole })
         .then((res) => {
             connection.release();
 

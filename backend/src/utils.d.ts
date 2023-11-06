@@ -1,5 +1,20 @@
 /// <reference path="../../utils.d.ts" />
 
+// API types
+
+type Session = {
+    user_id: number,
+    expiresIn: string,
+} & ({
+    role: "client";
+    client_id: number | null;
+    admin_id?: undefined;
+} | {
+    role: "admin";
+    admin_id: number | null;
+    client_id?: undefined;
+});
+
 // SQL types
 
 type EffectfulQueryResult = {
@@ -17,13 +32,15 @@ type EffectlessQueryResult<T> = T[];
 
 // Database Tables : Development Types
 
+type UserRole = 'admin' | 'client';
+
 type User = {
     id: number;
     user_id: number;
     admin_id: number | null;
     client_id: number | null;
     role_id: number;
-    role: 'admin' | 'client';
+    role: UserRole;
     email: string;
     fullname: string;
     created_at: Date;

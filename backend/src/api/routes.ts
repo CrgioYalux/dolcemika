@@ -2,6 +2,7 @@ const USERS = {
     GET: /^\/api\/users\/(\d+)\/?$/,
     AUTH: /^\/api\/users\/auth\/?$/,
     POST_CLIENT: /^\/api\/users\/clients\/?$/,
+    POST_ADMIN: /^\/api\/users\/admins\/?$/,
 };
 
 const MENU = {

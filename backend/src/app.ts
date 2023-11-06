@@ -5,9 +5,9 @@ import API from './api';
 
 import Middlewares from './middlewares';
 
-import type { Express } from 'express';
+// import type { Express } from 'express';
 
-function create(): Express {
+function create() {
     const app = express();
 
     app.disable('x-powered-by');
@@ -17,7 +17,7 @@ function create(): Express {
 
     // API request handling pipeline
    
-    app.get('/api/ping', (_req, res) => {
+    app.get('/api/ping', (req, res) => {
         res.status(200).send('pong').end();
     });
 

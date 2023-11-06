@@ -19,7 +19,7 @@ const Auth = (request: Request, response: Response, next: NextFunction): void =>
             return;
         }
 
-        request.body.user = decoded;
+        response.locals.session = decoded;
         next();
     });
 };

@@ -46,7 +46,8 @@ enum MenuOperationQuery {
 interface MenuOperation {
     Get: {
         Action: (
-            pool: PoolConnection
+            pool: PoolConnection,
+            options?: { asRole?: UserRole }
         ) => Promise<{ found: true, menu: Menu } | { found: false, message: string }>;
         QueryReturnType: EffectlessQueryResult<MenuItem>;
     };
@@ -87,7 +88,7 @@ interface MenuOperation {
     };
 };
 
-const Get: MenuOperation['Get']['Action'] = (pool) => {
+const Get: MenuOperation['Get']['Action'] = (pool, options = { asRole: 'client' }) => {
     return new Promise((resolve, reject) => {
         pool.query(MenuOperationQuery.Get, (err, results) => {
             if (err) {
@@ -102,7 +103,7 @@ const Get: MenuOperation['Get']['Action'] = (pool) => {
                 return;
             }
 
-            const menuTree = fromMenuItemListToMenuTree(parsed);
+            const menuTree = fromMenuItemListToMenuTree(parsed, { onlyAvailableItems: options.asRole === 'client' });
 
             resolve({ found: true, menu: menuTree });
         });

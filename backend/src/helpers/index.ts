@@ -5,7 +5,7 @@ const expiresIn: string = '1d';
 
 function generateAccessToken(user: ({ role: 'client' } & Pick<User, 'user_id' | 'client_id'>) | { role: 'admin' } & Pick<User, 'user_id' | 'admin_id'>): string {
     const payloadByRole = (user.role === 'client') ? { role: user.role, client_id: user.client_id } : { role: user.role, admin_id: user.admin_id };
-    const payload = {
+    const payload: Session = {
         expiresIn,
         user_id: user.user_id,
         ...payloadByRole

@@ -60,6 +60,34 @@ const PostClient = (request: Request<{}, {}, Pick<User, 'email' | 'password' | '
     });
 };
 
+const PostAdmin = (request: Request<{}, {}, Pick<User, 'email' | 'password' | 'fullname' | 'cellphone' | 'birthdate'>>, response: Response, next: NextFunction): void => {
+    if (!request.body.email || !request.body.password || !request.body.fullname || !request.body.cellphone || !request.body.birthdate) {
+        response.status(400).send({ message: 'Required fields are empty' });
+        return;
+    }
+    
+    db.pool.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Users.CreateAdmin(connection, request.body)
+        .then((res) => {
+            connection.release();
+
+            const status = res.created ? 201 : 400;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    });
+};
+
+
 const Auth = (request: Request<{}, {}, Pick<User, 'email' | 'password'>>, response: Response, next: NextFunction): void => {
     if (!request.body.email || !request.body.password) {
         response.status(400).send({ message: 'Required fields are empty' });
@@ -107,6 +135,7 @@ const Auth = (request: Request<{}, {}, Pick<User, 'email' | 'password'>>, respon
 const Users = {
     Get,
     PostClient,
+    PostAdmin,
     Auth,
 };
 

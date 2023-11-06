@@ -5,7 +5,7 @@ import Handlers from '../handlers';
 
 const router = express.Router();
 
-// router.get(ROUTES.MENU.GET, Handlers.Menu.Get); // being handled in unauth routes
+router.get(ROUTES.MENU.GET, Handlers.Menu.Get);
 router.post(ROUTES.MENU.POST_ITEM, Handlers.Menu.PostMenuItem);
 router.put(ROUTES.MENU.PUT_ITEM_AVAILABILITY, Handlers.Menu.PutMenuItemAvailability);
 router.put(ROUTES.MENU.PUT_ITEM_DESCRIPTION, Handlers.Menu.PutMenuItemDescription);

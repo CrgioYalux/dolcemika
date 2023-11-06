@@ -1,9 +1,12 @@
-function fromMenuItemListToMenuTree(items: MenuItem[]): Menu {
+function fromMenuItemListToMenuTree(items: MenuItem[], options: { onlyAvailableItems?: boolean } = { onlyAvailableItems: false }): Menu {
     const itemsAsNodesMap = new Map<number, MenuItemNode>();
 
     // Create a mapping of items by their IDs
     for (const item of items) {
         const { parent_id, is_available, ...rest } = item;
+
+        if (options.onlyAvailableItems && !is_available) continue;
+
         itemsAsNodesMap.set(item.id, {
             is_available: is_available ? true : false,
             ...rest,
