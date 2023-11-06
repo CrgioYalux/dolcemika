@@ -10,7 +10,7 @@
 | **GET**  | Admin / Client    | /api/orders/:id/                 | Trae un pedido según su id                                                              |      |
 | **GET**  | Admin             | /api/orders/states               | Trae todos los posibles estados de un pedido                                            |      |
 | **GET**  | Admin / Client    | /api/orders/:id/states/          | Trae todos los estados por los que pasó un pedido según su id                           |      |
-| **GET**  | Admin             | /api/orders/users/               | Trae los usuarios que hicieron pedidos y la cantidad de pedidos hechos para cada uno    |      |
+| **GET**  | Admin             | /api/orders/clients/             | Trae los usuarios que hicieron pedidos y la cantidad de pedidos hechos para cada uno    |      |
 | **GET**  | Admin / Client    | /api/orders/:id/comments/        | Trae los comentarios de un pedido hechos post-creación                                  |      |
 | **POST** | Client            | /api/orders/:id/comments/        | Crea un comentario post-creación en el pedido                                           |      |
 | **POST** | Client            | /api/orders/                     | Crea un pedido                                                                          |      |
@@ -34,12 +34,12 @@
 
 ### Users
 
-| Method   | Roles           | Endpoint            | Description                 | Body |
-|:--------:|:----------------|:--------------------|:----------------------------|:-----|
-| **GET**  | Admin           | /api/users/:id/     | Trae un usuario según su id |      |
-| **POST** | Client          | /api/users/clients/ | Crea un usuario client      |      |
-| **POST** | Admin           | /api/users/admin/   | Crea un usuario admin       |      |
-| **POST** | Client / Admin  | /api/users/auth/    | Autentica un usuario        |      |
+| Method   | Roles           | Endpoint                     | Description                 | Body |
+|:--------:|:----------------|:-----------------------------|:----------------------------|:-----|
+| **GET**  | Admin           | /api/users/:id/              | Trae un usuario según su id |      |
+| **POST** | Client          | /api/users/clients/          | Crea un usuario client      |      |
+| **POST** | Admin           | /api/users/admins/           | Crea un usuario admin       |      |
+| **POST** | Client / Admin  | /api/users/auth/             | Autentica un usuario        |      |
 
 ### Inventario  
 
@@ -53,11 +53,11 @@
 ---
 
 #### TODO  
-- [ ] **Required** - Trending menu options - as in a new tab - If selected one, push to menu.
-- [ ] **Required** - Admin can see a list of clients and how many orders they have had
+- [ ] **Required** - GET /api/order/:id has in its returning data structure the menu of the order, but the body property must be parsed from 'x-y-z-t' to the actual menu
+- [X] **Required** - Admin can see a list of clients and how many orders they have had
 - [X] **Required** - GET /api/menu for admin has to include those not available items
 - [X] **Required** - Fix +3 hours date offset MySQL is adding
-- [ ] **Required** - GET /api/order/:id has in its returning data structure the menu of the order, but the body property must be parsed from 'x-y-z-t' to the actual menu
+- [ ] Trending menu options - as in a new tab - If selected one, push to menu.
 - [ ] Differentiate route handling based on role
 - [ ] Birthday event for client
 - [ ] Add the expected body structure to all routes defined in this readme
