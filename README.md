@@ -45,5 +45,7 @@
 - [ ] Users authed as clients can't access to admin-level-required routes
 - [ ] GET /api/menu for admin has to include those not available items
 - [ ] Fix +3 hours date offset MySQL is adding
+- [X] Route for next state, pause and end order
+- [ ] GET /api/order/:id has in its returning data structure the menu of the order, but the body property must be parsed from 'x-y-z-t' to the actual menu
 
 ### [Stuff learned](/docs/an_unnecessary_fix.md)
