@@ -32,13 +32,14 @@
 | **PUT**  | Admin          | /api/menu/     | Modifica un item del menu   |      |
 | **DEL**  | Admin          | /api/menu/id/  | Elimina un item del menu    |      |
 
-### Clientes  
+### Users
 
-| Method   | Roles  | Endpoint         | Description                 | Body |
-|:--------:|:-------|:-----------------|:----------------------------|:-----|
-| **GET**  | Admin  | /api/users/:id/  | Trae un usuario según su id |      |
-| **POST** | Client | /api/users/      | Crea un usuario             |      |
-| **POST** | Client | /api/users/auth/ | Autentica un usuario        |      |
+| Method   | Roles           | Endpoint            | Description                 | Body |
+|:--------:|:----------------|:--------------------|:----------------------------|:-----|
+| **GET**  | Admin           | /api/users/:id/     | Trae un usuario según su id |      |
+| **POST** | Client          | /api/users/clients/ | Crea un usuario client      |      |
+| **POST** | Admin           | /api/users/admin/   | Crea un usuario admin       |      |
+| **POST** | Client / Admin  | /api/users/auth/    | Autentica un usuario        |      |
 
 ### Inventario  
 
@@ -54,8 +55,8 @@
 #### TODO  
 - [ ] **Required** - Trending menu options - as in a new tab - If selected one, push to menu.
 - [ ] **Required** - Admin can see a list of clients and how many orders they have had
-- [ ] **Required** - GET /api/menu for admin has to include those not available items
-- [ ] **Required** - Fix +3 hours date offset MySQL is adding
+- [X] **Required** - GET /api/menu for admin has to include those not available items
+- [X] **Required** - Fix +3 hours date offset MySQL is adding
 - [ ] **Required** - GET /api/order/:id has in its returning data structure the menu of the order, but the body property must be parsed from 'x-y-z-t' to the actual menu
 - [ ] Differentiate route handling based on role
 - [ ] Birthday event for client
