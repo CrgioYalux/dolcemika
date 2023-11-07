@@ -53,7 +53,6 @@
 ---
 
 #### TODO  
-- [ ] **Required** - GET /api/order/:id has in its returning data structure the menu of the order, but the body property must be parsed from 'x-y-z-t' to the actual menu
 - [X] **Required** - Admin can see a list of clients and how many orders they have had
 - [X] **Required** - GET /api/menu for admin has to include those not available items
 - [X] **Required** - Fix +3 hours date offset MySQL is adding
