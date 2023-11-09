@@ -63,6 +63,7 @@
 - [ ] Users authed as clients can't access to admin-level-required routes
 - [X] Route for next state, pause and end order
 - [X] GET /api/menu should be accesible even when not authed
+- [X] Axios interprets a 302 http code as if 'it found the resource, but it is somewhere else', so it treats it as an error which goes throught the catch. Change every handler using 302 for 200.
 
 ---
 
