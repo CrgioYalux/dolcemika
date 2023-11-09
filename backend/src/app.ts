@@ -25,7 +25,7 @@ function create() {
 
     app.use(API.Router.Unauth);
 
-    app.use(Middlewares.Auth);
+    // app.use(Middlewares.Auth);
 
     app.use(API.Router.Users);
     app.use(API.Router.Menu);

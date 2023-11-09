@@ -47,7 +47,7 @@ const Get = (request: Request, response: Response, next: NextFunction): void => 
         .then((res) => {
             connection.release();
 
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next)
@@ -76,7 +76,7 @@ const GetById = (request: Request, response: Response, next: NextFunction): void
         .then((res) => {
             connection.release();
 
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next);
@@ -98,7 +98,7 @@ const GetStates = (request: Request, response: Response, next: NextFunction): vo
         .then((res) => {
             connection.release();
 
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next);
@@ -302,7 +302,7 @@ const GetStateHistory = (request: Request, response: Response, next: NextFunctio
         .then((res) => {
             connection.release();
 
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next);
@@ -323,7 +323,7 @@ const GetAmountByClients = (request: Request, response: Response, next: NextFunc
         Controllers.Orders.GetAmountByClients(connection)
         .then((res) => {
             connection.release();
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next);

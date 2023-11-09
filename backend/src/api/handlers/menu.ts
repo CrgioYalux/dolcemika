@@ -28,7 +28,7 @@ const Get = (request: Request, response: Response, next: NextFunction): void => 
         .then((res) => {
             connection.release();
 
-            const status = res.found ? 302 : 404;
+            const status = res.found ? 200 : 404;
             response.status(status).send(res);
         })
         .catch(next);

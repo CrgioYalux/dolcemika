@@ -5,28 +5,43 @@ import http from 'http';
 import environment from './environment';
 import db from './db';
 import app from './app';
+import process from 'process';
 
 const PORT = process.env.PORT ?? '4000';
 
+function tryDBConnection(): Promise<{ connected: true }> {
+    return new Promise((resolve, reject) => {
+        environment.SHOW_LOGS && console.log('Testing database connection');
+
+        db.pool.getConnection((err, connection) => {
+            connection.release();
+
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            resolve({ connected: true });
+        });
+    });
+}
+
 function init(): void {
-    environment.SHOW_LOGS && console.log('Testing database connection');
-
-    db.pool.getConnection((err, connection) => {
-        if (err) {
-            environment.SHOW_LOGS && console.log(`Error while attempting connection to database: ${err}`);
-            return;
-        }
-
+    tryDBConnection()
+    .then(() => {
         environment.SHOW_LOGS && console.log('Successfully established connection with database');
 
-        connection.release();
-    });
+        const server = http.createServer(app.create());
 
-    const server = http.createServer(app.create());
+        server.listen(PORT, () => {
+            console.log(`Server listening on port :${PORT}`);
+        });
+    })
+    .catch((err) => {
+        environment.SHOW_LOGS && console.log('Failed to established connection with database');
 
-    server.listen(PORT, () => {
-        console.log(`Server listening on port :${PORT}`);
+        environment.SHOW_LOGS && console.error(err);
     });
-};
+}
 
 init();
