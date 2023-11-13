@@ -16,6 +16,7 @@ const MENU = {
 const ORDERS = {
     GET: /^\/api\/orders\/?$/,
     GET_BY_ID: /^\/api\/orders\/(\d+)\/?$/,
+    GET_BY_CLIENT_ID: /^\/api\/orders\/clients\/(\d+)\/?$/,
     POST: /^\/api\/orders\/?$/,
     GET_STATES: /^\/api\/orders\/states\/?$/,
     GET_STATE_HISTORY: /^\/api\/orders\/(\d+)\/states\/?$/,

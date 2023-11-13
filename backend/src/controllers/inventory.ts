@@ -148,7 +148,7 @@ const ChangeIngredientStock: InventoryOperation['ChangeIngredientStock']['Action
 
 const ChangeIngredientDescription: InventoryOperation['ChangeIngredientDescription']['Action'] = (pool, payload) => {
     return new Promise((resolve, reject) => {
-        pool.query(InventoryOperationQuery.ChangeIngredientDescription, [payload.title ?? null, payload.detail ?? null, payload.ingredient_id], (err, results) => {
+        pool.query(InventoryOperationQuery.ChangeIngredientDescription, [payload.title ?? null, payload.title ?? null, payload.detail ?? null, payload.ingredient_id], (err, results) => {
             if (err) {
                 reject({ changeIngredientDescriptionError: err });
                 return;

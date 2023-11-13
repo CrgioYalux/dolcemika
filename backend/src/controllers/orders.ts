@@ -38,17 +38,8 @@ enum OrderOperationQuery {
         VALUES 
             (?, ?)
     `,
-    GetClientOrdersById = `
-        SELECT
-            co.id AS order_id,
-            co.total_price,
-            co.created_at,
-            co.estimated_for,
-            co.detail
-        FROM client_order co
-        JOIN user_client uc ON uc.id = co.client_id
-        JOIN user u ON u.id = uc.user_id
-        WHERE u.id = ?
+    GetByClientId = `
+        SELECT o.* FROM OrdersDescribedInLastStateView o WHERE o.client_id = ?
     `,
     GetStateHistory = `
         SELECT
@@ -136,6 +127,13 @@ interface OrderOperation {
             payload: Pick<Order, 'order_id' | 'state_id'>
         ) => Promise<{ done: true } | { done: false, message: string }>;
         QueryReturnType: EffectfulQueryResult;
+    };
+    GetByClientId: {
+        Action: (
+            pool: PoolConnection,
+            payload: Pick<Order, 'client_id'>
+        ) => Promise<{ found: true, orders: Array<ClientOrderAtLastState> } | { found: false, message: string }>;
+        QueryReturnType: EffectlessQueryResult<ClientOrderAtLastState>;
     };
     GetStateHistory: {
         Action: (
@@ -768,6 +766,26 @@ const GetAmountByClients: OrderOperation['GetAmountByClients']['Action'] = (pool
     });
 };
 
+const GetByClientId: OrderOperation['GetByClientId']['Action'] = (pool, payload) => {
+    return new Promise((resolve, reject) => {
+        pool.query(OrderOperationQuery.GetByClientId, [payload.client_id], (err, results) => {
+            if (err) {
+                reject({ getByClientIdError: err });
+                return;
+            }
+
+            const parsed = results as OrderOperation['GetByClientId']['QueryReturnType'];
+
+            if (!parsed.length) {
+                resolve({ found: false, message: 'Could not find orders for the client' });
+                return;
+            }
+
+            resolve({ found: true, orders: parsed });
+        });
+    });
+};
+
 const Orders = {
     Create,
     GetStates,
@@ -781,6 +799,7 @@ const Orders = {
     ChangeToFinishedState,
     GetStateHistory,
     GetAmountByClients,
+    GetByClientId,
 };
 
 export default Orders;

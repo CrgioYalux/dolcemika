@@ -6,7 +6,7 @@ import type { NextFunction, Request, Response } from 'express';
 type PostOrderMenuRequestBody = { menu: Array<Pick<OrderMenu, 'body' | 'price'> & Partial<Pick<OrderMenu, 'detail'>>> };
 type PostOrderRequestBody = Pick<Order, 'client_id' | 'total_price'> & Partial<Pick<Order, 'detail'>>;
 const Post = (request: Request<{}, {}, PostOrderMenuRequestBody & PostOrderRequestBody>, response: Response, next: NextFunction): void => {
-    if (request.body.client_id === undefined || request.body.menu === undefined || request.body.menu.length === 0) {
+    if (request.body.client_id === undefined || request.body.menu === undefined || request.body.menu.length === 0 || request.body.total_price === undefined) {
         response.status(400).send({ message: 'Required fields are empty' });
         return;
     }
@@ -330,6 +330,34 @@ const GetAmountByClients = (request: Request, response: Response, next: NextFunc
     });
 };
 
+const GetByClientId = (request: Request, response: Response, next: NextFunction): void => {
+    const client_id = request.params[0];
+
+    if (client_id === undefined) {
+        response.status(400).send({ message: 'No client ID provided' });
+        return;
+    }
+
+    db.pool.getConnection((err, connection) => {
+        if (err) {
+            connection.release();
+
+            const error = new Error('Could not connect to database');
+            next(error);
+
+            return;
+        }
+
+        Controllers.Orders.GetByClientId(connection, { client_id: Number(client_id) })
+        .then((res) => {
+            connection.release();
+            const status = res.found ? 200 : 404;
+            response.status(status).send(res);
+        })
+        .catch(next);
+    })
+}
+
 const Orders = {
     Post,
     Get,
@@ -343,6 +371,7 @@ const Orders = {
     PostFinishedState,
     PostNextState,
     GetAmountByClients,
+    GetByClientId,
 };
 
 export default Orders;
