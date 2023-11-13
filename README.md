@@ -6,12 +6,13 @@
 
 | Method   | Roles             | Endpoint                         | Description                                                                             | Body |
 |:--------:|:------------------|:---------------------------------|:----------------------------------------------------------------------------------------|:-----|
-| **GET**  | Admin / Client    | /api/orders/                     | Trae todos los pedidos                                                                  |      |
+| **GET**  | Admin / Client    | /api/orders/                     | Trae todos los pedidos de forma simple                                                  |      |
 | **GET**  | Admin / Client    | /api/orders/:id/                 | Trae un pedido según su id                                                              |      |
 | **GET**  | Admin             | /api/orders/states               | Trae todos los posibles estados de un pedido                                            |      |
 | **GET**  | Admin / Client    | /api/orders/:id/states/          | Trae todos los estados por los que pasó un pedido según su id                           |      |
 | **GET**  | Admin             | /api/orders/clients/             | Trae los usuarios que hicieron pedidos y la cantidad de pedidos hechos para cada uno    |      |
 | **GET**  | Admin / Client    | /api/orders/:id/comments/        | Trae los comentarios de un pedido hechos post-creación                                  |      |
+| **GET**  | Client            | /api/orders/clients/:id/         | Trae todos los pedidos de un cliente en forma simple                                    |      |
 | **POST** | Client            | /api/orders/:id/comments/        | Crea un comentario post-creación en el pedido                                           |      |
 | **POST** | Client            | /api/orders/                     | Crea un pedido                                                                          |      |
 | **POST** | Admin             | /api/orders/:id/states/:id/      | Crea, como el último, un estado custom en un pedido                                     |      |
